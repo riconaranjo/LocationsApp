@@ -29,13 +29,11 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
     @IBAction func actionFunction(sender: UILongPressGestureRecognizer) {
 
         if (sender.state == UIGestureRecognizerState.Ended) {
-            print("--- LP: ended ---")
         }
         else if (sender.state == UIGestureRecognizerState.Began) {
-            print("--- LP: started ---")
             // gets location of long press relative to map
-            let touchPoint = sender.locationInView(mapView)
             
+            let touchPoint = sender.locationInView(mapView)
             let newCoordinate = mapView.convertPoint(touchPoint, toCoordinateFromView: mapView)
             
             pressedLocation = CLLocation(latitude: newCoordinate.latitude,longitude: newCoordinate.longitude)
@@ -59,8 +57,6 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
                 else {
                     print("empty location from long press geocoder")
                 }
-                
-                print("* from actionFuntion: '\(self.locationStr)'")
             })
         }// end long press
     }
@@ -71,7 +67,6 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
         getAddress( true, completionHandler: {(address) in
             if address != nil {
                 self.locationStr = address!
-                print(self.locationStr + "\n---------")
                 self.addLocation()
             }
             else {
@@ -183,8 +178,8 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
         if notNil {
             print("nil location")
         }
-        else {
-            print(locationStr)
+        else { // worked
+            //print(locationStr)
         }
     }
     
@@ -219,18 +214,21 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
         }
         else {
             locationListEmpty = true
+            print("locationList is empty" )
         }
         if NSUserDefaults.standardUserDefaults().objectForKey("latitudeList") != nil {
             latitudeList = NSUserDefaults.standardUserDefaults().objectForKey("latitudeList") as! [Double]
         }
         else {
             latitudeListEmpty = true
+            print("latitudeList is empty" )
         }
         if NSUserDefaults.standardUserDefaults().objectForKey("longitudeList") != nil {
             longitudeList = NSUserDefaults.standardUserDefaults().objectForKey("longitudeList") as![Double]
         }
         else {
             longitudeListEmpty = true
+            print("latitudeList is empty" )
         }
         
         if !locationListEmpty && !latitudeListEmpty && !longitudeListEmpty {
@@ -246,11 +244,7 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
                 //annotation.subtitle = "Description"
                 self.mapView.addAnnotation(annotation)
             }
-        }
-        else {
-            print("Empty: \(locationListEmpty) \(latitudeListEmpty) \(longitudeListEmpty)")
-        }
-        
+        } // end update pins
         //print("/*-------------------------------------------------------------------------------------------------------*/")
         /*---------------------------------------------------------------------------------------------------------*/
         
@@ -262,6 +256,15 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
         locationManager.startUpdatingLocation()
         
         mapView.showsUserLocation = true
+        getAddress( true, completionHandler: {(address) in
+            if address != nil {
+                self.locationStr = address!
+            }
+            else {
+                print("empty location returned from geocoder")
+            }
+        })
+        mapView.showsUserLocation.description// = locationStr
         
         // long press
         let uilpgr = UILongPressGestureRecognizer(target: self, action: #selector(ViewController.actionFunction(_:)))

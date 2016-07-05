@@ -21,6 +21,7 @@ class LocationTableViewController: UITableViewController {
     
     @IBOutlet weak var testButton: UIBarButtonItem!
     
+    // testing function right now, clears table, might make into proper Clear All button 
     @IBAction func testRow(sender: AnyObject) {
         
         locationList.removeAll()
@@ -38,32 +39,23 @@ class LocationTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        var locationListEmpty = false
-        var latitudeListEmpty = false
-        var longitudeListEmpty = false
-        
         if NSUserDefaults.standardUserDefaults().objectForKey("locationList") != nil {
             locationList = NSUserDefaults.standardUserDefaults().objectForKey("locationList") as! [String]
         }
         else {
-            locationListEmpty = true
+            print("locationList is empty" )
         }
         if NSUserDefaults.standardUserDefaults().objectForKey("latitudeList") != nil {
             latitudeList = NSUserDefaults.standardUserDefaults().objectForKey("latitudeList") as! [Double]
         }
         else {
-            latitudeListEmpty = true
+            print("latitudeList is empty" )
         }
         if NSUserDefaults.standardUserDefaults().objectForKey("longitudeList") != nil {
             longitudeList = NSUserDefaults.standardUserDefaults().objectForKey("longitudeList") as![Double]
         }
         else {
-            longitudeListEmpty = true
-        }
-        
-        if locationListEmpty || latitudeListEmpty || longitudeListEmpty {
-            
-            print("Empty: \(locationListEmpty) \(latitudeListEmpty) \(longitudeListEmpty)")
+            print("latitudeList is empty" )
         }
         
         tableView.reloadData()
@@ -101,8 +93,8 @@ class LocationTableViewController: UITableViewController {
 
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        
         let cell = tableView.dequeueReusableCellWithIdentifier("location", forIndexPath: indexPath)
-
         cell.textLabel?.text = locationList[indexPath.row]
 
         return cell
