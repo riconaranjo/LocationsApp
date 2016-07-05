@@ -22,8 +22,8 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
     var latitude = CLLocationDegrees()
     var longitude = CLLocationDegrees()
     var locationStr = String()
-    var firstOpened = Bool() // is the view just being opened
     
+    var firstOpened = Bool() // is the view just being opened
     
     // add location where long press
     @IBAction func actionFunction(sender: UILongPressGestureRecognizer) {
@@ -48,13 +48,18 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
                     let annotation = MKPointAnnotation()
                     annotation.coordinate = newCoordinate
                     annotation.title = self.locationStr
-                    annotation.subtitle = "Description"
+/*-------------------------------------------------------------------------------------------------------*/
+                    // add ability for user to add/modify description later
+                    //annotation.subtitle = "Description"
                     self.mapView.addAnnotation(annotation)
+                    self.latitude = annotation.coordinate.latitude
+                    self.longitude = annotation.coordinate.longitude
                     self.addLocation()
                 }
                 else {
                     print("empty location from long press geocoder")
                 }
+                
                 print("* from actionFuntion: '\(self.locationStr)'")
             })
         }// end long press
@@ -72,9 +77,7 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
             else {
                 print("empty location returned from geocoder")
             }
-
         })
-
     }
     
     // get address from location on map
@@ -99,7 +102,6 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
                     //print("\(place.subThoroughfare!) \(place.thoroughfare!) \(place.subLocality!)")
                     self.makeLocationString(place.subThoroughfare,thoroughfare: place.thoroughfare,locality: place.locality)
                     completionHandler(address: self.locationStr)
-                    
                 }
                 else {
                     print("error in geocoder")
@@ -129,32 +131,53 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
     }
     
     // add address to list in Location
+    // make sure to load values into locationStr, latitude, longitude before calling
     func addLocation() {
         
         if locationStr.characters.count > 0 {
             locationList.append(locationStr)
+            latitudeList.append(latitude)
+            longitudeList.append(longitude)
+            
         }
         else {
             print("empty location")
         }
         
-        NSUserDefaults.standardUserDefaults().setObject(locationList, forKey:"locationList")
+        // save arrays
+        NSUserDefaults.standardUserDefaults().setObject(locationList, forKey: "locationList")
+        NSUserDefaults.standardUserDefaults().setObject(latitudeList, forKey: "latitudeList")
+        NSUserDefaults.standardUserDefaults().setObject(longitudeList, forKey: "longitudeList")
     }
     
     func makeLocationString(subThoroughfare:String?,thoroughfare:String?,locality:String?) {
         
         var notNil = true
+        var firstString = true
         locationStr = "" // clear locationStr
+        
         if subThoroughfare != nil {
             locationStr = subThoroughfare!
             notNil = false
+            firstString = false
         }
         if thoroughfare != nil {
-            locationStr += " \(thoroughfare!)"
+            if firstString {
+                locationStr += "\(thoroughfare!)"
+                firstString = false
+            }
+            else {
+                locationStr += " \(thoroughfare!)"
+            }
             notNil = false
         }
         if locality != nil {
-            locationStr += " \(locality!)"
+            if firstString {
+                locationStr += "\(locality!)"
+            }
+            else {
+                 locationStr += " \(locality!)"
+            }
             notNil = false
         }
         if notNil {
@@ -163,10 +186,7 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
         else {
             print(locationStr)
         }
-        
-        
     }
-    
     
     // center map on User's location
     @IBAction func mapOnUser(sender: AnyObject) {
@@ -177,9 +197,64 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
         
     }
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        /*---------------------------------------------------------------------------------------------------------*/
+        // update map pins
+        var locationListEmpty = false
+        var latitudeListEmpty = false
+        var longitudeListEmpty = false
+        
+        firstOpened = true
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
+        
+        // update arrays and check if any are empty
+        if NSUserDefaults.standardUserDefaults().objectForKey("locationList") != nil {
+            locationList = NSUserDefaults.standardUserDefaults().objectForKey("locationList") as! [String]
+        }
+        else {
+            locationListEmpty = true
+        }
+        if NSUserDefaults.standardUserDefaults().objectForKey("latitudeList") != nil {
+            latitudeList = NSUserDefaults.standardUserDefaults().objectForKey("latitudeList") as! [Double]
+        }
+        else {
+            latitudeListEmpty = true
+        }
+        if NSUserDefaults.standardUserDefaults().objectForKey("longitudeList") != nil {
+            longitudeList = NSUserDefaults.standardUserDefaults().objectForKey("longitudeList") as![Double]
+        }
+        else {
+            longitudeListEmpty = true
+        }
+        
+        if !locationListEmpty && !latitudeListEmpty && !longitudeListEmpty {
+            
+            // allows to use index of value
+            for(index,element) in locationList.enumerate() {
+                let annotation = MKPointAnnotation()
+                let locStr = element // locationList[index]
+                let lat = latitudeList[index] as CLLocationDegrees
+                let long = longitudeList[index] as CLLocationDegrees
+                annotation.coordinate = CLLocationCoordinate2DMake(lat, long)
+                annotation.title = locStr
+                //annotation.subtitle = "Description"
+                self.mapView.addAnnotation(annotation)
+            }
+        }
+        else {
+            print("Empty: \(locationListEmpty) \(latitudeListEmpty) \(longitudeListEmpty)")
+        }
+        
+        //print("/*-------------------------------------------------------------------------------------------------------*/")
+        /*---------------------------------------------------------------------------------------------------------*/
+        
+        // set up map to be centered on user
         firstOpened = true
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -191,22 +266,15 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
         // long press
         let uilpgr = UILongPressGestureRecognizer(target: self, action: #selector(ViewController.actionFunction(_:)))
         mapView.addGestureRecognizer(uilpgr)
-        uilpgr.minimumPressDuration = 0.5
-        
+        uilpgr.minimumPressDuration = 0.35
     }
 
-    
+    // updates location of user
     func locationManager(manager:CLLocationManager, didUpdateLocations locations:[CLLocation]) {
         
         userLocation = locations[0] // the last location
-        
         latitude = userLocation.coordinate.latitude
         longitude = userLocation.coordinate.longitude
-        /*
-        let course = userLocation.course
-        let speed = userLocation.speed
-        let altitude = userLocation.altitude
-        */
         
         // field of view
         if firstOpened {
@@ -215,16 +283,13 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
             self.mapView.setRegion(region, animated: false)
             firstOpened = false
         }
-
     }
     
-    
-    
-    
+    /*
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
-
+    */
 
 }
 

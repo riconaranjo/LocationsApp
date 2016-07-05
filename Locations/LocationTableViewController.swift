@@ -8,7 +8,10 @@
 
 import UIKit
 
-var locationList = [String]()
+var locationList = [String]() // holds address
+var latitudeList = [Double]()
+var longitudeList = [Double]()
+    // all arrays map one-to-one for each location
 
 // Table View with locations
 class LocationTableViewController: UITableViewController {
@@ -21,19 +24,46 @@ class LocationTableViewController: UITableViewController {
     @IBAction func testRow(sender: AnyObject) {
         
         locationList.removeAll()
+        latitudeList.removeAll()
+        longitudeList.removeAll()
         
         tableView.reloadData()
         
         // save list in permanent storage
         NSUserDefaults.standardUserDefaults().setObject(locationList, forKey: "locationList")
-        
+        NSUserDefaults.standardUserDefaults().setObject(latitudeList, forKey: "latitudeList")
+        NSUserDefaults.standardUserDefaults().setObject(longitudeList, forKey: "longitudeList")
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        var locationListEmpty = false
+        var latitudeListEmpty = false
+        var longitudeListEmpty = false
+        
         if NSUserDefaults.standardUserDefaults().objectForKey("locationList") != nil {
             locationList = NSUserDefaults.standardUserDefaults().objectForKey("locationList") as! [String]
+        }
+        else {
+            locationListEmpty = true
+        }
+        if NSUserDefaults.standardUserDefaults().objectForKey("latitudeList") != nil {
+            latitudeList = NSUserDefaults.standardUserDefaults().objectForKey("latitudeList") as! [Double]
+        }
+        else {
+            latitudeListEmpty = true
+        }
+        if NSUserDefaults.standardUserDefaults().objectForKey("longitudeList") != nil {
+            longitudeList = NSUserDefaults.standardUserDefaults().objectForKey("longitudeList") as![Double]
+        }
+        else {
+            longitudeListEmpty = true
+        }
+        
+        if locationListEmpty || latitudeListEmpty || longitudeListEmpty {
+            
+            print("Empty: \(locationListEmpty) \(latitudeListEmpty) \(longitudeListEmpty)")
         }
         
         tableView.reloadData()
@@ -86,13 +116,16 @@ class LocationTableViewController: UITableViewController {
         // if swipe to left:
         if editingStyle == UITableViewCellEditingStyle.Delete {
             locationList.removeAtIndex(indexPath.row)
+            latitudeList.removeAtIndex(indexPath.row)
+            longitudeList.removeAtIndex(indexPath.row)
         }
-        // reload the tableview
+        
         tableView.reloadData()
         
-        // save new version of list
+        NSUserDefaults.standardUserDefaults().setObject(locationList, forKey: "locationList")
+        NSUserDefaults.standardUserDefaults().setObject(latitudeList, forKey: "latitudeList")
+        NSUserDefaults.standardUserDefaults().setObject(longitudeList, forKey: "longitudeList")
         NSUserDefaults.standardUserDefaults().setObject(locationList, forKey:"locationList")
-        
     }
     
 
