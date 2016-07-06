@@ -13,10 +13,15 @@ import UIKit
  * - implement dictionary instead of 3 arrays
  */
 
+//var locationDictionary = [String:[Double]]()
+
 var locationList = [String]() // holds address
 var latitudeList = [Double]()
 var longitudeList = [Double]()
 // all arrays map one-to-one for each location
+var row = -1
+// row selected on table view, -1 for non or add button pressed for segue
+
 
 /*--------------------------------------------------------------------------*/
 
@@ -27,6 +32,7 @@ class LocationTableViewController: UITableViewController {
     @IBOutlet var locationTableView: UITableView!
     
     @IBOutlet weak var testButton: UIBarButtonItem!
+    
     
     // testing function right now, clears table, might make into proper Clear All button 
     @IBAction func testRow(sender: AnyObject) {
@@ -74,15 +80,34 @@ class LocationTableViewController: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
     
+    // for segue when add button is pressed
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier != nil {
+            if segue.identifier == "locationTable" {
+            }
+            else if segue.identifier == "addButton"{
+                print("from addButton")
+                row = -1
+            }
+        }
+        else {
+            print("segue nil")
+        }
+    }
+    
+    // whenever table view reappears
     override func viewWillAppear(animated: Bool) {
         tableView.reloadData()
     }
 
+    /*
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
+    */
+    
+    
     /*-----------------------------*/
     // MARK: - Table view data source
 
@@ -127,6 +152,10 @@ class LocationTableViewController: UITableViewController {
         NSUserDefaults.standardUserDefaults().setObject(locationList, forKey:"locationList")
     }
     
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        print("You selected cell number: \(indexPath.row)")
+        row = indexPath.row
+    }
 
     /*
     // Override to support conditional editing of the table view.

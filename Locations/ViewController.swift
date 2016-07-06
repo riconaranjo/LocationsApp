@@ -201,7 +201,17 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
         // field of view
         if firstOpened {
             let mapSpan:MKCoordinateSpan = MKCoordinateSpanMake(0.02,0.02)
-            let region:MKCoordinateRegion = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
+            var region = MKCoordinateRegion()
+            
+            if row == -1  {
+                region = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
+            }
+            else {
+                let lat = latitudeList[row] as CLLocationDegrees
+                let long = longitudeList[row] as CLLocationDegrees
+                let coordinate = CLLocationCoordinate2DMake(lat, long)
+                region = MKCoordinateRegionMake(coordinate,mapSpan)
+            }
             self.mapView.setRegion(region, animated: false)
             firstOpened = false
         }
@@ -270,6 +280,8 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
         
         firstOpened = true // this is so view doesn't stay on user
     }
+    
+
     
     
     /*

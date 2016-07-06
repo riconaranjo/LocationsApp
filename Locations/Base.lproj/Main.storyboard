@@ -78,6 +78,9 @@
                                     <rect key="frame" x="0.0" y="0.0" width="600" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableViewCellContentView>
+                                <connections>
+                                    <segue destination="BYZ-38-t0r" kind="show" identifier="locationTable" id="0A5-wo-AuW"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <connections>
@@ -93,7 +96,7 @@
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="8yr-nw-c4x">
                             <connections>
-                                <segue destination="BYZ-38-t0r" kind="show" id="9Ic-DR-u6m"/>
+                                <segue destination="BYZ-38-t0r" kind="show" identifier="addButton" id="9Ic-DR-u6m"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -126,4 +129,7 @@
     <resources>
         <image name="LocationImage.png" width="80" height="80"/>
     </resources>
+    <inferredMetricsTieBreakers>
+        <segue reference="0A5-wo-AuW"/>
+    </inferredMetricsTieBreakers>
 </document>
