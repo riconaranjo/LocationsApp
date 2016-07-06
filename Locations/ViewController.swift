@@ -16,7 +16,7 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
     @IBOutlet weak var addUserLocationButton: UIBarButtonItem!
     @IBOutlet weak var userLocationButton: UIButton!
 
-    var locationManager = CLLocationManager()
+    let locationManager = CLLocationManager()
     var userLocation = CLLocation()
     var pressedLocation = CLLocation()
     var latitude = CLLocationDegrees()
@@ -46,7 +46,7 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
                     let annotation = MKPointAnnotation()
                     annotation.coordinate = newCoordinate
                     annotation.title = self.locationStr
-/*-------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
                     // add ability for user to add/modify description later
                     //annotation.subtitle = "Description"
                     self.mapView.addAnnotation(annotation)
@@ -58,14 +58,14 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
                     print("empty location from long press geocoder")
                 }
             })
-        }// end long press
+        } // end long press
     }
     
     // add user's location, from button press
     @IBAction func addUserLocation(sender: UIBarButtonItem) {
             
         getAddress( true, completionHandler: {(address) in
-            if address != nil {
+            if address != nil && address != "" {
                 self.locationStr = address!
                 self.addLocation()
             }
@@ -133,7 +133,6 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
             locationList.append(locationStr)
             latitudeList.append(latitude)
             longitudeList.append(longitude)
-            
         }
         else {
             print("empty location")
@@ -145,6 +144,7 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
         NSUserDefaults.standardUserDefaults().setObject(longitudeList, forKey: "longitudeList")
     }
     
+    // loads address into locationStr as string
     func makeLocationString(subThoroughfare:String?,thoroughfare:String?,locality:String?) {
         
         var notNil = true
@@ -189,20 +189,35 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
         let mapSpan = mapView.region.span
         let region:MKCoordinateRegion = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
         self.mapView.setRegion(region, animated: true)
-        
     }
     
+    // updates location of user
+    func locationManager(manager:CLLocationManager, didUpdateLocations locations:[CLLocation]) {
+        
+        userLocation = locations[0] // the last location
+        latitude = userLocation.coordinate.latitude
+        longitude = userLocation.coordinate.longitude
+        
+        // field of view
+        if firstOpened {
+            let mapSpan:MKCoordinateSpan = MKCoordinateSpanMake(0.02,0.02)
+            let region:MKCoordinateRegion = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
+            self.mapView.setRegion(region, animated: false)
+            firstOpened = false
+        }
+    }
+    
+    /*--------------------------------------------------------------------------*/
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        /*---------------------------------------------------------------------------------------------------------*/
         // update map pins
         var locationListEmpty = false
         var latitudeListEmpty = false
         var longitudeListEmpty = false
         
-        firstOpened = true
+        // center image on user
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()
@@ -245,48 +260,17 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
                 self.mapView.addAnnotation(annotation)
             }
         } // end update pins
-        //print("/*-------------------------------------------------------------------------------------------------------*/")
-        /*---------------------------------------------------------------------------------------------------------*/
-        
-        // set up map to be centered on user
-        firstOpened = true
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
         
         mapView.showsUserLocation = true
-        getAddress( true, completionHandler: {(address) in
-            if address != nil {
-                self.locationStr = address!
-            }
-            else {
-                print("empty location returned from geocoder")
-            }
-        })
-        mapView.showsUserLocation.description// = locationStr
         
         // long press
         let uilpgr = UILongPressGestureRecognizer(target: self, action: #selector(ViewController.actionFunction(_:)))
         mapView.addGestureRecognizer(uilpgr)
         uilpgr.minimumPressDuration = 0.35
-    }
-
-    // updates location of user
-    func locationManager(manager:CLLocationManager, didUpdateLocations locations:[CLLocation]) {
         
-        userLocation = locations[0] // the last location
-        latitude = userLocation.coordinate.latitude
-        longitude = userLocation.coordinate.longitude
-        
-        // field of view
-        if firstOpened {
-            let mapSpan:MKCoordinateSpan = MKCoordinateSpanMake(0.02,0.02)
-            let region:MKCoordinateRegion = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
-            self.mapView.setRegion(region, animated: false)
-            firstOpened = false
-        }
+        firstOpened = true // this is so view doesn't stay on user
     }
+    
     
     /*
     override func didReceiveMemoryWarning() {
@@ -295,4 +279,12 @@ class ViewController: UIViewController,CLLocationManagerDelegate {
     */
 
 }
+
+
+
+
+
+
+
+
 

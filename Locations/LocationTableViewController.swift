@@ -8,10 +8,17 @@
 
 import UIKit
 
+/* Notes:
+ * - implement so when location in list is pressed the location is shown centered on map
+ * - implement dictionary instead of 3 arrays
+ */
+
 var locationList = [String]() // holds address
 var latitudeList = [Double]()
 var longitudeList = [Double]()
-    // all arrays map one-to-one for each location
+// all arrays map one-to-one for each location
+
+/*--------------------------------------------------------------------------*/
 
 // Table View with locations
 class LocationTableViewController: UITableViewController {
@@ -76,7 +83,7 @@ class LocationTableViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    /*******/
+    /*-----------------------------*/
     // MARK: - Table view data source
 
     // sections
