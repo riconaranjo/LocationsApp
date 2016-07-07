@@ -86,7 +86,6 @@ class LocationTableViewController: UITableViewController {
             if segue.identifier == "locationTable" {
             }
             else if segue.identifier == "addButton"{
-                print("from addButton")
                 row = -1
             }
         }
@@ -153,7 +152,6 @@ class LocationTableViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        print("You selected cell number: \(indexPath.row)")
         row = indexPath.row
     }
 
