@@ -9,7 +9,6 @@
 import UIKit
 
 /* Notes:
- * - implement so when location in list is pressed the location is shown centered on map
  * - implement dictionary instead of 3 arrays
  */
 
@@ -19,14 +18,11 @@ var locationList = [String]() // holds address
 var latitudeList = [Double]()
 var longitudeList = [Double]()
 // all arrays map one-to-one for each location
-var row = -1
-// row selected on table view, -1 for non or add button pressed for segue
+var row = -1    // this value is used for segueing to map location from row, else -1
 
-
-/*--------------------------------------------------------------------------*/
 
 // Table View with locations
-class LocationTableViewController: UITableViewController {
+class LocationTableVC: UITableViewController {
 
     @IBOutlet weak var addButton: UIBarButtonItem!
     @IBOutlet var locationTableView: UITableView!
@@ -35,7 +31,7 @@ class LocationTableViewController: UITableViewController {
     
     
     // testing function right now, clears table, might make into proper Clear All button 
-    @IBAction func testRow(sender: AnyObject) {
+    @IBAction func testRow(_ sender: AnyObject) {
         
         locationList.removeAll()
         latitudeList.removeAll()
@@ -43,29 +39,28 @@ class LocationTableViewController: UITableViewController {
         
         tableView.reloadData()
         
-        // save list in permanent storage
-        NSUserDefaults.standardUserDefaults().setObject(locationList, forKey: "locationList")
-        NSUserDefaults.standardUserDefaults().setObject(latitudeList, forKey: "latitudeList")
-        NSUserDefaults.standardUserDefaults().setObject(longitudeList, forKey: "longitudeList")
+        // save list in local storage
+        saveLocations()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if NSUserDefaults.standardUserDefaults().objectForKey("locationList") != nil {
-            locationList = NSUserDefaults.standardUserDefaults().objectForKey("locationList") as! [String]
+        // if location
+        if UserDefaults.standard.object(forKey: "locationList") != nil {
+            locationList = UserDefaults.standard.object(forKey: "locationList") as! [String]
         }
         else {
             print("locationList is empty" )
         }
-        if NSUserDefaults.standardUserDefaults().objectForKey("latitudeList") != nil {
-            latitudeList = NSUserDefaults.standardUserDefaults().objectForKey("latitudeList") as! [Double]
+        if UserDefaults.standard.object(forKey: "latitudeList") != nil {
+            latitudeList = UserDefaults.standard.object(forKey: "latitudeList") as! [Double]
         }
         else {
             print("latitudeList is empty" )
         }
-        if NSUserDefaults.standardUserDefaults().objectForKey("longitudeList") != nil {
-            longitudeList = NSUserDefaults.standardUserDefaults().objectForKey("longitudeList") as![Double]
+        if UserDefaults.standard.object(forKey: "longitudeList") != nil {
+            longitudeList = UserDefaults.standard.object(forKey: "longitudeList") as![Double]
         }
         else {
             print("latitudeList is empty" )
@@ -80,81 +75,64 @@ class LocationTableViewController: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
     
-    // for segue when add button is pressed
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier != nil {
-            if segue.identifier == "locationTable" {
-            }
-            else if segue.identifier == "addButton"{
-                row = -1
-            }
+    // segue to map view
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if segue.identifier == nil { return }
+        
+        if segue.identifier == "locationTable" {
         }
-        else {
-            print("segue nil")
+        else if segue.identifier == "addButton"{
+            row = -1
         }
     }
     
-    // whenever table view reappears
-    override func viewWillAppear(animated: Bool) {
+    // Reload table with any new data
+    override func viewWillAppear(_ animated: Bool) {
         tableView.reloadData()
     }
 
-    /*
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    */
-    
-    
-    /*-----------------------------*/
-    // MARK: - Table view data source
-
-    // sections
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    /// @brief Retrn the number of sections in table sections
+    override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
     // rows
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return locationList.count
     }
 
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCellWithIdentifier("location", forIndexPath: indexPath)
-        cell.textLabel?.text = locationList[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: "location", for: indexPath)
+        cell.textLabel?.text = locationList[(indexPath as NSIndexPath).row]
 
         return cell
     }
     
     
-    
-    // swipe to delete
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+    /// @brief Enables swipe left to delete row functionality
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         
-        // if swipe to left:
-        if editingStyle == UITableViewCellEditingStyle.Delete {
-            locationList.removeAtIndex(indexPath.row)
-            latitudeList.removeAtIndex(indexPath.row)
-            longitudeList.removeAtIndex(indexPath.row)
+        // if swipe to left to delete:
+        if editingStyle == UITableViewCellEditingStyle.delete {
+            locationList.remove(at: (indexPath as NSIndexPath).row)
+            latitudeList.remove(at: (indexPath as NSIndexPath).row)
+            longitudeList.remove(at: (indexPath as NSIndexPath).row)
         }
         
+        // update table and stored data
         tableView.reloadData()
-        
-        NSUserDefaults.standardUserDefaults().setObject(locationList, forKey: "locationList")
-        NSUserDefaults.standardUserDefaults().setObject(latitudeList, forKey: "latitudeList")
-        NSUserDefaults.standardUserDefaults().setObject(longitudeList, forKey: "longitudeList")
-        NSUserDefaults.standardUserDefaults().setObject(locationList, forKey:"locationList")
+        saveLocations()
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        row = indexPath.row
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        row = (indexPath as NSIndexPath).row
     }
-
+    
     /*
     // Override to support conditional editing of the table view.
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
@@ -200,4 +178,11 @@ class LocationTableViewController: UITableViewController {
     }
     */
 
+}
+
+/// @brief Saves location names and coordinates in local data (UserDefaults)
+func saveLocations() {
+    UserDefaults.standard.set(locationList, forKey: "locationList")
+    UserDefaults.standard.set(latitudeList, forKey: "latitudeList")
+    UserDefaults.standard.set(longitudeList, forKey: "longitudeList")
 }
