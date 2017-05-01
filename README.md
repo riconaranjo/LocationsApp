@@ -10,5 +10,16 @@ Map View shows user location and has button to save User's current location
 
 
 Files of interest:
-* LocationTableView.swift (Table of locations)
-* ViewController.swift (Implentation of Map View)
+* LocationTableVC.swift (Table of locations)
+* MapVC.swift (Implentation of Map View)
+
+Learned so far:
+* Built a basic iOS app with segueways between views
+* Sent data between view-controllers
+* Saved data permanently on local device
+* Able to centre map on user or scroll around the map
+* Long pressing on map will store specific location
+* Pressing row in table view will segue to map view
+    - location will be centred with map pin
+* Location is parsed geocoder
+    - had to learn how to use callbacks/closures to implement this
