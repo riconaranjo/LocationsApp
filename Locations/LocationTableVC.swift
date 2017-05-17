@@ -26,7 +26,6 @@ class LocationTableVC: UITableViewController {
 
     @IBOutlet weak var addButton: UIBarButtonItem!
     @IBOutlet var locationTableView: UITableView!
-    
     @IBOutlet weak var testButton: UIBarButtonItem!
     
     
@@ -43,8 +42,22 @@ class LocationTableVC: UITableViewController {
         saveLocations()
     }
     
+    // when view loads, 'do this'
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // todo: finish adding colour scheme
+        //let appdelegate = UIApplication.shared.delegate as! AppDelegate
+        //appdelegate.application(UIApplication.shared, didFinishLaunchingWithOptions: nil)
+        //navigationController?.navigationBar.tintColor = Style.COLOUR_2
+        navigationController?.navigationBar.isTranslucent = true
+        navigationController?.navigationBar.barTintColor = Style.COLOUR_1
+        navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: Style.COLOUR_4]
+        self.tableView.backgroundColor = Style.COLOUR_2
+        self.tableView.isOpaque = false
+        
+        // this changes status bar to white
+        self.navigationController?.navigationBar.barStyle = UIBarStyle.black;
         
         // if location
         if UserDefaults.standard.object(forKey: "locationList") != nil {
@@ -75,6 +88,17 @@ class LocationTableVC: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
     
+    // Preferred status bar style lightContent to use on dark background.
+    // Swift 3
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
+    
+    // Reload table with any new data
+    override func viewWillAppear(_ animated: Bool) {
+        tableView.reloadData()
+    }
+
     // segue to map view
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
@@ -87,32 +111,26 @@ class LocationTableVC: UITableViewController {
         }
     }
     
-    // Reload table with any new data
-    override func viewWillAppear(_ animated: Bool) {
-        tableView.reloadData()
-    }
-
-    /// @brief Retrn the number of sections in table sections
+    /// @brief Return the number of sections in table sections
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
-    // rows
+    // @brief returns number of rows
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         return locationList.count
     }
 
-    
+    // @brief populates rows with text
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "location", for: indexPath)
         cell.textLabel?.text = locationList[(indexPath as NSIndexPath).row]
-
+        cell.textLabel?.textColor = UIColor.white
+        cell.backgroundColor = UIColor(red:0.30, green:0.30, blue:0.37, alpha:1.0)
         return cell
     }
-    
     
     /// @brief Enables swipe left to delete row functionality
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
@@ -132,52 +150,6 @@ class LocationTableVC: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         row = (indexPath as NSIndexPath).row
     }
-    
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            // Delete the row from the data source
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-        } else if editingStyle == .Insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
 
 /// @brief Saves location names and coordinates in local data (UserDefaults)
@@ -186,3 +158,4 @@ func saveLocations() {
     UserDefaults.standard.set(latitudeList, forKey: "latitudeList")
     UserDefaults.standard.set(longitudeList, forKey: "longitudeList")
 }
+

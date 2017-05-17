@@ -134,7 +134,7 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
         
         var notNil = true
         var firstString = true
-        locationStr = ""        // clear locationStr
+        locationStr = ""        // clears locationStr
         
         if subThoroughfare != nil {
             
