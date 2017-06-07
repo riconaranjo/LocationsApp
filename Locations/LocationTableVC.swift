@@ -28,8 +28,7 @@ class LocationTableVC: UITableViewController {
     @IBOutlet var locationTableView: UITableView!
     @IBOutlet weak var testButton: UIBarButtonItem!
     
-    
-    // testing function right now, clears table, might make into proper Clear All button 
+    // Clear All button
     @IBAction func testRow(_ sender: AnyObject) {
         
         locationList.removeAll()
@@ -52,7 +51,7 @@ class LocationTableVC: UITableViewController {
         //navigationController?.navigationBar.tintColor = Style.COLOUR_2
         navigationController?.navigationBar.isTranslucent = true
         navigationController?.navigationBar.barTintColor = Style.COLOUR_1
-        navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: Style.COLOUR_4]
+        navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: Style.COLOUR_5]
         self.tableView.backgroundColor = Style.COLOUR_2
         self.tableView.isOpaque = false
         
@@ -89,7 +88,6 @@ class LocationTableVC: UITableViewController {
     }
     
     // Preferred status bar style lightContent to use on dark background.
-    // Swift 3
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
@@ -104,25 +102,30 @@ class LocationTableVC: UITableViewController {
         
         if segue.identifier == nil { return }
         
+        //let vc = segue.destination as! MapVC
+        
         if segue.identifier == "locationTable" {
+            // send specific coordinates
+            
         }
-        else if segue.identifier == "addButton"{
+        else if segue.identifier == "addButton" {
+            // centre map on user
             row = -1
         }
     }
     
-    /// @brief Return the number of sections in table sections
+    /// Return the number of sections in table sections
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
-    // @brief returns number of rows
+    /// returns number of rows
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return locationList.count
     }
 
-    // @brief populates rows with text
+    /// populates rows with text
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "location", for: indexPath)
@@ -132,7 +135,7 @@ class LocationTableVC: UITableViewController {
         return cell
     }
     
-    /// @brief Enables swipe left to delete row functionality
+    /// Enables swipe left to delete row
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         
         // if swipe to left to delete:
@@ -152,7 +155,7 @@ class LocationTableVC: UITableViewController {
     }
 }
 
-/// @brief Saves location names and coordinates in local data (UserDefaults)
+/// Saves location names and coordinates in local data (UserDefaults)
 func saveLocations() {
     UserDefaults.standard.set(locationList, forKey: "locationList")
     UserDefaults.standard.set(latitudeList, forKey: "latitudeList")

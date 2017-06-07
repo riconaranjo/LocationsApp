@@ -17,7 +17,7 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var addUserLocationButton: UIBarButtonItem!
     @IBOutlet weak var userLocationButton: UIButton!
-    
+        
     let locationManager = CLLocationManager()
     var userLocation = CLLocation()
     var pressedLocation = CLLocation()
@@ -65,7 +65,7 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
         } // end long press
     }
     
-    // add user's location, from button press
+    // Store the user's location when button tapped
     @IBAction func addUserLocation(_ sender: UIBarButtonItem) {
         
         getAddress( true, closure: { (address) in
@@ -79,8 +79,8 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
         })
     }
     
-    /// @brief gets coordinates of location from geocoder
-    func getAddress(_ isUserLocation:Bool, closure:@escaping (_ address:String?) -> Void) {
+    /// gets GPS coordinates of location from Geocoder
+    func getAddress(_ isUserLocation: Bool, closure:@escaping (_ address:String?) -> Void) {
         
         var location = CLLocation()
         isUserLocation == true ? (location = userLocation) : (location = pressedLocation)
@@ -94,26 +94,17 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
             else if placemarks?.count > 0 {
                 let place = placemarks![0] as CLPlacemark
                 
-                //print(place.locality)
-                //.ISOcountryCode
-                //.administrativeArea
-                //.sublocality
-                //.throughfare
-                //.subThroughfare // (street number)
-                ///print(place)
-                //print("\(place.subThoroughfare!) \(place.thoroughfare!) \(place.subLocality!)")
-                self.makeLocationString(place.subThoroughfare, thoroughfare: place.thoroughfare, locality: place.locality)
+                self.makeLocationString(place)
                 closure(self.locationStr)
             }
             else {
                 print("error in geocoder")
                 closure(nil)
             }
-            
         })
     }
 
-    /// @brief adds location in locationStr, latitude, and  longitude
+    /// adds location in locationStr, latitude, and  longitude
     func addLocation() {
         
         if locationStr.characters.count > 0 {
@@ -130,45 +121,19 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
     }
     
     // loads address into locationStr as string
-    func makeLocationString(_ subThoroughfare:String?, thoroughfare:String?, locality:String?) {
-        
-        var notNil = true
-        var firstString = true
-        locationStr = ""        // clears locationStr
-        
-        if subThoroughfare != nil {
+    func makeLocationString(_ place: CLPlacemark) {
+            var text = ""
+            let locality = place.locality ?? ""
+            let thoroughfare = place.thoroughfare ?? ""
+            let subThoroughfare = place.subThoroughfare ?? ""
             
-            locationStr = subThoroughfare!
-            notNil = false
-            firstString = false
-        }
-        
-        if thoroughfare != nil {
+            // if all paramters are empty, quit
+            if subThoroughfare == "" && thoroughfare == "" && locality == "" {
+                return
+            }
             
-            if firstString {
-                locationStr += "\(thoroughfare!)"
-                firstString = false
-            }
-            else {
-                locationStr += " \(thoroughfare!)"
-            }
-            notNil = false
-        }
-        
-        if locality != nil {
-            
-            if firstString {
-                locationStr += "\(locality!)"
-            }
-            else {
-                locationStr += " \(locality!)"
-            }
-            notNil = false
-        }
-        
-        if notNil {
-            print("nil location")
-        }
+            text = "\(subThoroughfare) \(thoroughfare) \(locality)"
+            locationStr = text
     }
     
     // centre map on User's location
@@ -206,7 +171,6 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
     }
     
     override func viewDidLoad() {
-        
         super.viewDidLoad()
         
         // flags for updateing map pins
@@ -263,12 +227,12 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
         mapView.addGestureRecognizer(uilpgr)
         uilpgr.minimumPressDuration = 0.35
         
-        firstOpened = true // if the view just being opened -> centre on user location
+        firstOpened = true // if the view just being opened -> centre the map on user location
     }
 }
 
 
-/// @brief pattern recognition for comparing (long, lat) positons
+/// pattern recognition for comparing (long, lat) positons
 fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
     
     switch (lhs, rhs) {

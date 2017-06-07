@@ -49,7 +49,6 @@
                     </view>
                     <navigationItem key="navigationItem" id="UrQ-Na-SZl">
                         <barButtonItem key="rightBarButtonItem" title="Add Your Location" id="7hS-8n-lJ5">
-                            <color key="tintColor" red="0.50196078430000002" green="0.69411764710000001" blue="0.57254901960000004" alpha="1" colorSpace="calibratedRGB"/>
                             <connections>
                                 <action selector="addUserLocation:" destination="BYZ-38-t0r" id="1AR-Aj-XJg"/>
                             </connections>
@@ -94,14 +93,13 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Locations" id="jUV-qz-5yW">
+                        <barButtonItem key="backBarButtonItem" title="Back" id="hwo-kX-bNs"/>
                         <barButtonItem key="leftBarButtonItem" title="Clear" id="HkS-oE-49j">
-                            <color key="tintColor" red="0.50196078430000002" green="0.69411764710000001" blue="0.57254901960000004" alpha="1" colorSpace="calibratedRGB"/>
                             <connections>
                                 <action selector="testRow:" destination="Yei-2p-ItW" id="6d2-LS-HbA"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="8yr-nw-c4x">
-                            <color key="tintColor" red="0.50196078431372548" green="0.69411764705882351" blue="0.5725490196078431" alpha="1" colorSpace="calibratedRGB"/>
                             <connections>
                                 <segue destination="BYZ-38-t0r" kind="show" identifier="addButton" id="9Ic-DR-u6m"/>
                             </connections>
@@ -139,5 +137,5 @@
     <inferredMetricsTieBreakers>
         <segue reference="0A5-wo-AuW"/>
     </inferredMetricsTieBreakers>
-    <color key="tintColor" red="0.50196078430000002" green="0.69411764710000001" blue="0.57254901960000004" alpha="1" colorSpace="calibratedRGB"/>
+    <color key="tintColor" red="0.59999999999999998" green="0.75686274509803919" blue="0.55294117647058827" alpha="1" colorSpace="calibratedRGB"/>
 </document>
