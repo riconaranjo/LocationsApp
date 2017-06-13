@@ -8,8 +8,6 @@
 
 import UIKit
 import MapKit
-//import LocationTableVC
-
 
 // Map View
 class MapVC: UIViewController,CLLocationManagerDelegate {
@@ -20,9 +18,6 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
         
     let locationManager = CLLocationManager()
     var userLocation = CLLocation()
-    var pressedLocation = CLLocation()
-    var latitude = CLLocationDegrees()
-    var longitude = CLLocationDegrees()
     var locationStr = String()
     
     var firstOpened = Bool() // is the view just being opened
@@ -30,131 +25,50 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
     // add location where long press
     @IBAction func addLongPressLocation(_ sender: UILongPressGestureRecognizer) {
         
-        if (sender.state == UIGestureRecognizerState.ended) {
-        }
-        else if (sender.state == UIGestureRecognizerState.began) {
-            // gets location of long press relative to map
+        // gets location of long press relative to map
+        if (sender.state == UIGestureRecognizerState.began) {
             
             let touchPoint = sender.location(in: mapView)
             let newCoordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
             
-            pressedLocation = CLLocation(
+            let pressed = CLLocation(
                 latitude: newCoordinate.latitude, longitude: newCoordinate.longitude)
             
-            getAddress(false, closure: { (address) in
-                
-                if address != nil {
-                    
-                    self.locationStr = address!
-                    
-                    // map annotation things
-                    let annotation = MKPointAnnotation()
-                    annotation.coordinate = newCoordinate
-                    annotation.title = self.locationStr
-                    // todo: add ability for user to add/modify description later
-                    //annotation.subtitle = "Description"
-                    self.mapView.addAnnotation(annotation)
-                    self.latitude = annotation.coordinate.latitude
-                    self.longitude = annotation.coordinate.longitude
-                    self.addLocation()
-                }
-                else {
-                    print("empty location from long press geocoder")
-                }
-            })
-        } // end long press
+            let location = Location(pressed)
+            
+            // map annotation things
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = location.coordinate
+            annotation.title = self.locationStr
+            // todo: add ability for user to add/modify description later
+            //annotation.subtitle = "Description"
+            self.mapView.addAnnotation(annotation)
+        }
     }
     
     // Store the user's location when button tapped
     @IBAction func addUserLocation(_ sender: UIBarButtonItem) {
-        
-        getAddress( true, closure: { (address) in
-            if address != nil && address != "" {
-                self.locationStr = address!
-                self.addLocation()
-            }
-            else {
-                print("empty location returned from geocoder")
-            }
-        })
+        _ = Location(userLocation)
     }
     
-    /// gets GPS coordinates of location from Geocoder
-    func getAddress(_ isUserLocation: Bool, closure:@escaping (_ address:String?) -> Void) {
-        
-        var location = CLLocation()
-        isUserLocation == true ? (location = userLocation) : (location = pressedLocation)
-        
-        CLGeocoder().reverseGeocodeLocation(location, completionHandler: {
-            (placemarks, error ) -> Void in
-            
-            if error != nil {
-                print(error!)
-            }
-            else if placemarks?.count > 0 {
-                let place = placemarks![0] as CLPlacemark
-                
-                self.makeLocationString(place)
-                closure(self.locationStr)
-            }
-            else {
-                print("error in geocoder")
-                closure(nil)
-            }
-        })
-    }
-
-    /// adds location in locationStr, latitude, and  longitude
-    func addLocation() {
-        
-        if locationStr.characters.count > 0 {
-            locationList.append(locationStr)
-            latitudeList.append(latitude)
-            longitudeList.append(longitude)
-        }
-        else {
-            print("empty location")
-        }
-        
-        // save arrays
-        saveLocations()
-    }
-    
-    // loads address into locationStr as string
-    func makeLocationString(_ place: CLPlacemark) {
-            var text = ""
-            let locality = place.locality ?? ""
-            let thoroughfare = place.thoroughfare ?? ""
-            let subThoroughfare = place.subThoroughfare ?? ""
-            
-            // if all paramters are empty, quit
-            if subThoroughfare == "" && thoroughfare == "" && locality == "" {
-                return
-            }
-            
-            text = "\(subThoroughfare) \(thoroughfare) \(locality)"
-            locationStr = text
-    }
-    
-    // centre map on User's location
+    /// centres the map on User's location
     @IBAction func mapOnUser(_ sender: AnyObject) {
         let mapSpan = mapView.region.span
         let region:MKCoordinateRegion = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
         self.mapView.setRegion(region, animated: true)
     }
     
-    // updates location of user
+    /// automatically updates location of user
     func locationManager(_ manager:CLLocationManager, didUpdateLocations locations:[CLLocation]) {
         
         userLocation = locations[0]     // the last location
-        latitude  = userLocation.coordinate.latitude
-        longitude = userLocation.coordinate.longitude
         
         // field of view
         if firstOpened {
             let mapSpan:MKCoordinateSpan = MKCoordinateSpanMake(0.02,0.02)
             var region = MKCoordinateRegion()
             
+            // todo: update
             if row == -1  {     // if not coming from row press
                 region = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
             }
@@ -173,36 +87,18 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // flags for updateing map pins
-        var locationListEmpty = true
-        var latitudeListEmpty = true
-        var longitudeListEmpty = true
-        
-        // center image on user
+        // sets up the delegate
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
         
+        // centre image on user
+        
         // update arrays and check if any are empty
-        if UserDefaults.standard.object(forKey: "locationList") != nil {
-            locationList = UserDefaults.standard.object(forKey: "locationList") as! [String]
-            locationListEmpty = false
-        }
-        
-        if UserDefaults.standard.object(forKey: "latitudeList") != nil {
-            latitudeList = UserDefaults.standard.object(forKey: "latitudeList") as! [Double]
-            latitudeListEmpty = false
-        }
-        
-        if UserDefaults.standard.object(forKey: "longitudeList") != nil {
-            longitudeList = UserDefaults.standard.object(forKey: "longitudeList") as![Double]
-            longitudeListEmpty = false
-        }
-        
-        // if locations have been saved, show them on map as pins
-        if !locationListEmpty && !latitudeListEmpty && !longitudeListEmpty {
-            
+        if UserDefaults.standard.object(forKey: "locationTable") != nil {
+            locationList = UserDefaults.standard.object(forKey: "locationTable") as! [String]
+
             // like a foreach with index too
             for(index,element) in locationList.enumerated() {
                 
@@ -228,30 +124,5 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
         uilpgr.minimumPressDuration = 0.35
         
         firstOpened = true // if the view just being opened -> centre the map on user location
-    }
-}
-
-
-/// pattern recognition for comparing (long, lat) positons
-fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-    
-    switch (lhs, rhs) {
-    case let (l?, r?):
-        return l < r
-    case (nil, _?):
-        return true
-        
-    default:
-        return false
-    }
-}
-
-fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-    switch (lhs, rhs) {
-    case let (l?, r?):
-        return l > r
-        
-    default:
-        return rhs < lhs
     }
 }

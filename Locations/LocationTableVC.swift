@@ -7,29 +7,21 @@
 //
 
 import UIKit
+import MapKit
 
-/* Notes:
- * - implement dictionary instead of 3 arrays
- */
-
-//var locationDictionary = [String:[Double]]()
-
-var locationList = [String]() // holds address
-var latitudeList = [Double]()
-var longitudeList = [Double]()
-// all arrays map one-to-one for each location
 var row = -1    // this value is used for segueing to map location from row, else -1
-
 
 // Table View with locations
 class LocationTableVC: UITableViewController {
 
+    var locationsTable:[Location] = []
+    
     @IBOutlet weak var addButton: UIBarButtonItem!
     @IBOutlet var locationTableView: UITableView!
     @IBOutlet weak var testButton: UIBarButtonItem!
     
     // Clear All button
-    @IBAction func testRow(_ sender: AnyObject) {
+    @IBAction func ClearButtonTapped(_ sender: AnyObject) {
         
         locationList.removeAll()
         latitudeList.removeAll()
@@ -38,25 +30,17 @@ class LocationTableVC: UITableViewController {
         tableView.reloadData()
         
         // save list in local storage
-        saveLocations()
+        saveLocations(CLLocation())
     }
     
     // when view loads, 'do this'
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // todo: finish adding colour scheme
-        //let appdelegate = UIApplication.shared.delegate as! AppDelegate
-        //appdelegate.application(UIApplication.shared, didFinishLaunchingWithOptions: nil)
-        //navigationController?.navigationBar.tintColor = Style.COLOUR_2
-        navigationController?.navigationBar.isTranslucent = true
-        navigationController?.navigationBar.barTintColor = Style.COLOUR_1
-        navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: Style.COLOUR_5]
-        self.tableView.backgroundColor = Style.COLOUR_2
-        self.tableView.isOpaque = false
+        applyTheme()
         
-        // this changes status bar to white
-        self.navigationController?.navigationBar.barStyle = UIBarStyle.black;
+        locationsTable = UserDefaults.standard.object(forKey: "locationsTable") as? [Location] ?? locationsTable
+        print(locationsTable[1])
         
         // if location
         if UserDefaults.standard.object(forKey: "locationList") != nil {
@@ -147,18 +131,35 @@ class LocationTableVC: UITableViewController {
         
         // update table and stored data
         tableView.reloadData()
-        saveLocations()
+        saveLocations(CLLocation())
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         row = (indexPath as NSIndexPath).row
     }
+    
+    /// Changes app theme
+    func applyTheme() {
+        // todo: finish adding colour scheme
+        navigationController?.navigationBar.isTranslucent = true
+        navigationController?.navigationBar.barTintColor = Style.COLOUR_1
+        navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: Style.COLOUR_5]
+        self.tableView.backgroundColor = Style.COLOUR_2
+        self.tableView.isOpaque = false
+        
+        // this changes status bar to white
+        self.navigationController?.navigationBar.barStyle = UIBarStyle.black;
+        
+    }
 }
 
 /// Saves location names and coordinates in local data (UserDefaults)
-func saveLocations() {
+func saveLocations(_ x:CLLocation) {
     UserDefaults.standard.set(locationList, forKey: "locationList")
     UserDefaults.standard.set(latitudeList, forKey: "latitudeList")
     UserDefaults.standard.set(longitudeList, forKey: "longitudeList")
+    UserDefaults.standard.set(x, forKey: "locationsTable")
 }
+
+
 
