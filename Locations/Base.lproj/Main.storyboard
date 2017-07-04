@@ -79,11 +79,11 @@
                                 <rect key="frame" x="0.0" y="28" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="LOc-AX-EZn" id="d5A-gV-SXZ">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableViewCellContentView>
                                 <connections>
-                                    <segue destination="BYZ-38-t0r" kind="show" identifier="locationTable" id="0A5-wo-AuW"/>
+                                    <segue destination="BYZ-38-t0r" kind="show" identifier="rowSelected" id="0A5-wo-AuW"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>

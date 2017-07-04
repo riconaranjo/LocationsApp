@@ -14,7 +14,7 @@ var row = -1    // this value is used for segueing to map location from row, els
 // Table View with locations
 class LocationTableVC: UITableViewController {
 
-    var locationsTable:[Location] = []
+    var locationTable:[Location] = []
     
     @IBOutlet weak var addButton: UIBarButtonItem!
     @IBOutlet var locationTableView: UITableView!
@@ -23,49 +23,21 @@ class LocationTableVC: UITableViewController {
     // Clear All button
     @IBAction func ClearButtonTapped(_ sender: AnyObject) {
         
-        locationList.removeAll()
-        latitudeList.removeAll()
-        longitudeList.removeAll()
-        
+        locationTable.removeAll()
+        clearLocationTable()
         tableView.reloadData()
         
         // save list in local storage
-        saveLocations(CLLocation())
+        clearLocationTable()
     }
     
-    // when view loads, 'do this'
+    // when view loads, 'initial set-up'
     override func viewDidLoad() {
         super.viewDidLoad()
         
         applyTheme()
-        
-        locationsTable = UserDefaults.standard.object(forKey: "locationsTable") as? [Location] ?? locationsTable
-        print(locationsTable[1])
-        
-        // if location
-        if UserDefaults.standard.object(forKey: "locationList") != nil {
-            locationList = UserDefaults.standard.object(forKey: "locationList") as! [String]
-        }
-        else {
-            print("locationList is empty" )
-        }
-        if UserDefaults.standard.object(forKey: "latitudeList") != nil {
-            latitudeList = UserDefaults.standard.object(forKey: "latitudeList") as! [Double]
-        }
-        else {
-            print("latitudeList is empty" )
-        }
-        if UserDefaults.standard.object(forKey: "longitudeList") != nil {
-            longitudeList = UserDefaults.standard.object(forKey: "longitudeList") as![Double]
-        }
-        else {
-            print("latitudeList is empty" )
-        }
-        
-        tableView.reloadData()
 
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
+        tableView.reloadData()
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
@@ -76,26 +48,48 @@ class LocationTableVC: UITableViewController {
         return .lightContent
     }
     
-    // Reload table with any new data
+    // Reload table with any new data everytime table will appear
     override func viewWillAppear(_ animated: Bool) {
+        let tempAddress = UserDefaults.standard.object(forKey: "tempAddress") as? [NSString] ?? [NSString]()
+        let tempLat = UserDefaults.standard.object(forKey: "tempLat") as? [NSNumber] ?? [NSNumber]()
+        let tempLong = UserDefaults.standard.object(forKey: "tempLong") as? [NSNumber] ?? [NSNumber]()
+        
+        // if one of the lists is empty, quit
+        if tempAddress.count == 0 || tempLat.count == 0 || tempLong.count == 0 {
+            return
+        } // if one of the lists is different
+        if tempAddress.count != tempLat.count || tempAddress.count != tempLong.count {
+            print("One of the lists was not the same size")
+            return
+        }
+        
+        buildLocationTable(tempAddresses: tempAddress, tempLat: tempLat, tempLong: tempLong)
         tableView.reloadData()
     }
 
-    // segue to map view
+    // Segue to map view
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         if segue.identifier == nil { return }
         
-        //let vc = segue.destination as! MapVC
+        let mapVC = segue.destination as! MapVC
         
-        if segue.identifier == "locationTable" {
+        if segue.identifier == "rowSelected" {
             // send specific coordinates
+            //mapVC.sentLocation = sender as! Location
+            if let indexPath = self.tableView.indexPathForSelectedRow {
+                mapVC.sentLocation = locationTable[(indexPath as NSIndexPath).row]
+            }
             
         }
         else if segue.identifier == "addButton" {
             // centre map on user
-            row = -1
+            let emptyLocation = Location()
+            emptyLocation.address = "empty"
+            mapVC.sentLocation = emptyLocation
         }
+        // send all locations for map pins
+        mapVC.locationTable = locationTable
     }
     
     /// Return the number of sections in table sections
@@ -104,17 +98,20 @@ class LocationTableVC: UITableViewController {
         return 1
     }
 
-    /// returns number of rows
+    /// Returns number of rows
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return locationList.count
+        return locationTable.count
     }
 
-    /// populates rows with text
+    /// Populates rows with text
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         let cell = tableView.dequeueReusableCell(withIdentifier: "location", for: indexPath)
-        cell.textLabel?.text = locationList[(indexPath as NSIndexPath).row]
+        let location = locationTable[(indexPath as NSIndexPath).row]
+        cell.textLabel?.text = location.address
+        
         cell.textLabel?.textColor = UIColor.white
+        
+        // todo: this is in constants folder?!
         cell.backgroundColor = UIColor(red:0.30, green:0.30, blue:0.37, alpha:1.0)
         return cell
     }
@@ -124,18 +121,18 @@ class LocationTableVC: UITableViewController {
         
         // if swipe to left to delete:
         if editingStyle == UITableViewCellEditingStyle.delete {
-            locationList.remove(at: (indexPath as NSIndexPath).row)
-            latitudeList.remove(at: (indexPath as NSIndexPath).row)
-            longitudeList.remove(at: (indexPath as NSIndexPath).row)
+            
+            locationTable.remove(at: (indexPath as NSIndexPath).row)
+            deleteAtIndexLocationTable(at: (indexPath as NSIndexPath).row)
+            
         }
         
         // update table and stored data
         tableView.reloadData()
-        saveLocations(CLLocation())
     }
     
+    /// Action when cell in tableview is selected
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        row = (indexPath as NSIndexPath).row
     }
     
     /// Changes app theme
@@ -149,17 +146,48 @@ class LocationTableVC: UITableViewController {
         
         // this changes status bar to white
         self.navigationController?.navigationBar.barStyle = UIBarStyle.black;
+    }
+    
+    /// takes data saved in NSUserDefaults, and popluates the
+    func buildLocationTable(tempAddresses:[NSString], tempLat:[NSNumber], tempLong:[NSNumber]) {
         
+        let size = [tempAddresses.count, tempLat.count, tempLong.count].min() ?? 0
+        
+        if size == 0 { return } // if empty 
+        
+        locationTable.removeAll()   // clear array since not checking if location exists in list
+        
+        for index in 0..<size {
+            let location = Location(address: tempAddresses[index], latitude: tempLat[index], longitude: tempLong[index])
+            locationTable.append(location)
+        }
     }
 }
 
-/// Saves location names and coordinates in local data (UserDefaults)
-func saveLocations(_ x:CLLocation) {
-    UserDefaults.standard.set(locationList, forKey: "locationList")
-    UserDefaults.standard.set(latitudeList, forKey: "latitudeList")
-    UserDefaults.standard.set(longitudeList, forKey: "longitudeList")
-    UserDefaults.standard.set(x, forKey: "locationsTable")
+/// Clears the locationTable in local data (UserDefaults)
+func clearLocationTable() {
+    let tempAddress = [NSString]()
+    let tempLat = [NSNumber]()
+    let tempLong = [NSNumber]()
+    
+    UserDefaults.standard.set(tempAddress, forKey: "tempAddress")
+    UserDefaults.standard.set(tempLat, forKey: "tempLat")
+    UserDefaults.standard.set(tempLong, forKey: "tempLong")
 }
 
-
-
+/// Clears the locationTable in local data (UserDefaults)
+func deleteAtIndexLocationTable(at:Int) {
+    var tempAddress = UserDefaults.standard.object(forKey: "tempAddress") as? [NSString] ?? [NSString]()
+    var tempLat = UserDefaults.standard.object(forKey: "tempLat") as? [NSNumber] ?? [NSNumber]()
+    var tempLong = UserDefaults.standard.object(forKey: "tempLong") as? [NSNumber] ?? [NSNumber]()
+    
+    if tempAddress.count == 0 { return }
+    
+    tempAddress.remove(at: at)
+    tempLat.remove(at: at)
+    tempLong.remove(at: at)
+    
+    UserDefaults.standard.set(tempAddress, forKey: "tempAddress")
+    UserDefaults.standard.set(tempLat, forKey: "tempLat")
+    UserDefaults.standard.set(tempLong, forKey: "tempLong")
+}

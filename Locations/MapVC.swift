@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 
 // Map View
-class MapVC: UIViewController,CLLocationManagerDelegate {
+class MapVC: UIViewController, CLLocationManagerDelegate {
     
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var addUserLocationButton: UIBarButtonItem!
@@ -18,11 +18,11 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
         
     let locationManager = CLLocationManager()
     var userLocation = CLLocation()
-    var locationStr = String()
-    
+    var locationTable = [Location]()
+    var sentLocation = Location()
     var firstOpened = Bool() // is the view just being opened
     
-    // add location where long press
+    /// add location where long press
     @IBAction func addLongPressLocation(_ sender: UILongPressGestureRecognizer) {
         
         // gets location of long press relative to map
@@ -31,24 +31,16 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
             let touchPoint = sender.location(in: mapView)
             let newCoordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
             
-            let pressed = CLLocation(
-                latitude: newCoordinate.latitude, longitude: newCoordinate.longitude)
+            let pressed = CLLocation(latitude: newCoordinate.latitude, longitude: newCoordinate.longitude)
             
-            let location = Location(pressed)
-            
-            // map annotation things
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = location.coordinate
-            annotation.title = self.locationStr
-            // todo: add ability for user to add/modify description later
-            //annotation.subtitle = "Description"
-            self.mapView.addAnnotation(annotation)
+            //let location = addLocation(pressed)
+            _ = addLocation(pressed)
         }
     }
     
-    // Store the user's location when button tapped
+    /// Store the user's location when button tapped
     @IBAction func addUserLocation(_ sender: UIBarButtonItem) {
-        _ = Location(userLocation)
+        _ = addLocation(userLocation)
     }
     
     /// centres the map on User's location
@@ -58,9 +50,8 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
         self.mapView.setRegion(region, animated: true)
     }
     
-    /// automatically updates location of user
+    /// automatically updates location of user + where map is centred
     func locationManager(_ manager:CLLocationManager, didUpdateLocations locations:[CLLocation]) {
-        
         userLocation = locations[0]     // the last location
         
         // field of view
@@ -68,13 +59,14 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
             let mapSpan:MKCoordinateSpan = MKCoordinateSpanMake(0.02,0.02)
             var region = MKCoordinateRegion()
             
-            // todo: update
-            if row == -1  {     // if not coming from row press
+            // if not coming from row press
+            if sentLocation.address == "empty" {
                 region = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
             }
-            else {      // else focus on location in row
-                let lat = latitudeList[row] as CLLocationDegrees
-                let long = longitudeList[row] as CLLocationDegrees
+            // else focus on location in row
+            else {
+                let lat = sentLocation.coordinate.latitude as CLLocationDegrees
+                let long = sentLocation.coordinate.longitude as CLLocationDegrees
                 let coordinate = CLLocationCoordinate2DMake(lat, long)
                 region = MKCoordinateRegionMake(coordinate,mapSpan)
             }
@@ -82,6 +74,63 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
             self.mapView.setRegion(region, animated: false)
             firstOpened = false // stop forcing map centred on user
         }
+    }
+    
+    /// takes the CLLocation, and finds the placemark from reverse geocoder
+    func getPlacemark(_ cllocation:CLLocation, location: Location) {
+        CLGeocoder().reverseGeocodeLocation(cllocation, completionHandler: { (placemarks, error ) in
+            
+            if error != nil || placemarks == nil || placemarks!.count == 0 {
+                print(error ?? "Unknown error in geocoder")
+                return
+            }
+            
+            let p = placemarks![0] as CLPlacemark
+            location.setAddress(p)
+            location.setCoordinate(cllocation)
+            
+            var tempAddress = UserDefaults.standard.object(forKey: "tempAddress") as? [NSString] ?? [NSString]()
+            var tempLat = UserDefaults.standard.object(forKey: "tempLat") as? [NSNumber] ?? [NSNumber]()
+            var tempLong = UserDefaults.standard.object(forKey: "tempLong") as? [NSNumber] ?? [NSNumber]()
+            
+            
+            for(index, lat) in tempLat.enumerated() {
+                let x = lat as! Double
+                let y = location.nsLat as! Double
+                let latResult = fabs(x - y) < 0.0001
+                
+                let u = tempLong[index] as! Double
+                let v = location.nsLong as! Double
+                let longResult = fabs(u - v) < 0.0001
+                
+                if latResult && longResult {
+                    return
+                }
+            }
+            
+            tempAddress.append(location.nsAddress)
+            tempLat.append(location.nsLat)
+            tempLong.append(location.nsLong)
+            
+            UserDefaults.standard.set(tempAddress, forKey: "tempAddress")
+            UserDefaults.standard.set(tempLat, forKey: "tempLat")
+            UserDefaults.standard.set(tempLong, forKey: "tempLong")
+            
+            // map annotation things
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = location.coordinate
+            annotation.title = location.address
+            // todo: add ability for user to add/modify description later
+            //annotation.subtitle = "Description"
+            self.mapView.addAnnotation(annotation)
+        })
+    }
+    
+    /// Adds and saves location names and coordinates in local data (UserDefaults)
+    func addLocation(_ cllocation:CLLocation) -> Location {
+        let location = Location()
+        getPlacemark(cllocation, location: location)
+        return location
     }
     
     override func viewDidLoad() {
@@ -93,22 +142,20 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
         
-        // centre image on user
-        
-        // update arrays and check if any are empty
-        if UserDefaults.standard.object(forKey: "locationTable") != nil {
-            locationList = UserDefaults.standard.object(forKey: "locationTable") as! [String]
-
-            // like a foreach with index too
-            for(index,element) in locationList.enumerated() {
+        // centre image on user or saved location + add map pins
+        if locationTable.count != 0 {
+            
+            // like a foreach (with index, but not used)
+            for(_,loc) in locationTable.enumerated() {
                 
                 let annotation = MKPointAnnotation()
-                let locStr = element
-                let lat = latitudeList[index] as CLLocationDegrees
-                let long = longitudeList[index] as CLLocationDegrees
+                let address = loc.address
+                let lat = loc.coordinate.latitude as CLLocationDegrees
+                let long = loc.coordinate.longitude as CLLocationDegrees
                 
                 annotation.coordinate = CLLocationCoordinate2DMake(lat, long)
-                annotation.title = locStr
+                annotation.title = address
+                
                 // todo: add description capabilties
                 //annotation.subtitle = "Description"
                 self.mapView.addAnnotation(annotation)
@@ -118,7 +165,7 @@ class MapVC: UIViewController,CLLocationManagerDelegate {
         // show user as blue dot
         mapView.showsUserLocation = true
         
-        // add long press functionality to map view
+        // allow long press to add map pin
         let uilpgr = UILongPressGestureRecognizer(target: self, action: #selector(MapVC.addLongPressLocation(_:)))
         mapView.addGestureRecognizer(uilpgr)
         uilpgr.minimumPressDuration = 0.35
