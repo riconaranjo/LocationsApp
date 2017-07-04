@@ -97,11 +97,11 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
             for(index, lat) in tempLat.enumerated() {
                 let x = lat as! Double
                 let y = location.nsLat as! Double
-                let latResult = fabs(x - y) < 0.0001
+                let latResult = fabs(x - y) < 0.0002
                 
                 let u = tempLong[index] as! Double
                 let v = location.nsLong as! Double
-                let longResult = fabs(u - v) < 0.0001
+                let longResult = fabs(u - v) < 0.0002
                 
                 if latResult && longResult {
                     return
