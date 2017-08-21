@@ -107,7 +107,7 @@ class LocationTableVC: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "location", for: indexPath)
         let location = locationTable[(indexPath as NSIndexPath).row]
-        cell.textLabel?.text = location.address
+        cell.textLabel?.text = location.address as String
         
         cell.textLabel?.textColor = UIColor.white
         

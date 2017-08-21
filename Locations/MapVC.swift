@@ -65,8 +65,8 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
             }
             // else focus on location in row
             else {
-                let lat = sentLocation.coordinate.latitude as CLLocationDegrees
-                let long = sentLocation.coordinate.longitude as CLLocationDegrees
+                let lat = sentLocation.latitude as! CLLocationDegrees
+                let long = sentLocation.longitude as! CLLocationDegrees
                 let coordinate = CLLocationCoordinate2DMake(lat, long)
                 region = MKCoordinateRegionMake(coordinate,mapSpan)
             }
@@ -93,14 +93,14 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
             var tempLat = UserDefaults.standard.object(forKey: "tempLat") as? [NSNumber] ?? [NSNumber]()
             var tempLong = UserDefaults.standard.object(forKey: "tempLong") as? [NSNumber] ?? [NSNumber]()
             
-            
+            // if location is close enough to existing location, do not add it
             for(index, lat) in tempLat.enumerated() {
                 let x = lat as! Double
-                let y = location.nsLat as! Double
+                let y = location.latitude as! Double
                 let latResult = fabs(x - y) < 0.0002
                 
                 let u = tempLong[index] as! Double
-                let v = location.nsLong as! Double
+                let v = location.longitude as! Double
                 let longResult = fabs(u - v) < 0.0002
                 
                 if latResult && longResult {
@@ -108,9 +108,9 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
                 }
             }
             
-            tempAddress.append(location.nsAddress)
-            tempLat.append(location.nsLat)
-            tempLong.append(location.nsLong)
+            tempAddress.append(location.address)
+            tempLat.append(location.latitude)
+            tempLong.append(location.longitude)
             
             UserDefaults.standard.set(tempAddress, forKey: "tempAddress")
             UserDefaults.standard.set(tempLat, forKey: "tempLat")
@@ -118,8 +118,10 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
             
             // map annotation things
             let annotation = MKPointAnnotation()
-            annotation.coordinate = location.coordinate
-            annotation.title = location.address
+            let lat = CLLocationDegrees(location.latitude)
+            let long = CLLocationDegrees(location.longitude)
+            annotation.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
+            annotation.title = location.address as String
             // todo: add ability for user to add/modify description later
             //annotation.subtitle = "Description"
             self.mapView.addAnnotation(annotation)
@@ -150,11 +152,11 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
                 
                 let annotation = MKPointAnnotation()
                 let address = loc.address
-                let lat = loc.coordinate.latitude as CLLocationDegrees
-                let long = loc.coordinate.longitude as CLLocationDegrees
+                let lat = loc.latitude as! CLLocationDegrees
+                let long = loc.longitude as! CLLocationDegrees
                 
                 annotation.coordinate = CLLocationCoordinate2DMake(lat, long)
-                annotation.title = address
+                annotation.title = address as String
                 
                 // todo: add description capabilties
                 //annotation.subtitle = "Description"

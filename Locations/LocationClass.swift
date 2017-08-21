@@ -13,39 +13,26 @@ class Location {
     
     /// Holds the address for the location in format:
     /// \(place.subThoroughfare!) \(place.thoroughfare!) \(place.locality!)
-    var address:String
+    var address:NSString
     /// Contains longitude and latitude values for the location
-    var coordinate:CLLocationCoordinate2D
-    
-    var nsAddress:NSString
-    var nsLat:NSNumber
-    var nsLong:NSNumber
+    var latitude:NSNumber
+    var longitude:NSNumber
 
     
     init() {
-        address = ""
-        coordinate = CLLocationCoordinate2D()
-        
-        nsAddress = address as NSString
-        nsLat = coordinate.latitude as Double as NSNumber
-        nsLong = coordinate.longitude as Double as NSNumber
+        address = "" as NSString
+        latitude = 0
+        longitude = 0
     }
     
     init(address:NSString, latitude:NSNumber, longitude:NSNumber) {
-        self.address = address as String
-        
-        let lat = latitude as! CLLocationDegrees
-        let long = longitude as! CLLocationDegrees
-        coordinate = CLLocationCoordinate2D(latitude: lat,longitude: long)
-        
-        nsAddress = address as NSString
-        nsLat = coordinate.latitude as NSNumber
-        nsLong = coordinate.longitude as NSNumber
+        self.address = address
+        self.latitude = latitude
+        self.longitude = longitude
     }
     
     /// Parses location from CLPlacemark place and stores it in address
     func setAddress(_ place: CLPlacemark) {
-
         var text = ""
         var locality = place.locality ?? ""
         var thoroughfare = place.thoroughfare ?? ""
@@ -53,7 +40,7 @@ class Location {
         
         // if all paramters are empty, only add country
         if subThoroughfare == "" && thoroughfare == "" && locality == "" {
-            address = place.country ?? "No country or address found"
+            address = place.country as NSString? ?? "No country or address found"
             return
         }
         
@@ -63,16 +50,13 @@ class Location {
         if subThoroughfare  != "" { subThoroughfare += " " }
         
         text = "\(subThoroughfare)\(thoroughfare)\(locality)"
-        address = text
-        nsAddress = address as NSString
+        address = text as NSString
     }
     
     /// Saves coordinates for location
     func setCoordinate(_ location:CLLocation) {
-        coordinate = location.coordinate
-        nsLat = coordinate.latitude as Double as NSNumber
-        nsLong = coordinate.longitude as Double as NSNumber
-
+        latitude = location.coordinate.latitude as Double as NSNumber
+        longitude = location.coordinate.longitude as Double as NSNumber
     }
 }
 

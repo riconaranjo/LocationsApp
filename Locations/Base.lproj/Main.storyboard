@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="SJe-wO-xqU">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="SJe-wO-xqU">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
-        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -15,37 +14,27 @@
             <objects>
                 <viewController title="Map View Controller" id="BYZ-38-t0r" customClass="MapVC" customModule="Locations" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
-                        <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
+                        <viewControllerLayoutGuide type="top" id="C1K-qf-WzX"/>
+                        <viewControllerLayoutGuide type="bottom" id="xcD-pc-YYa"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="zqy-4Y-tLC">
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="zqy-4Y-tLC">
                                 <rect key="frame" x="-4" y="64" width="383" height="603"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </mapView>
-                            <button opaque="NO" alpha="0.90000000000000002" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7SR-Gm-SHg">
-                                <rect key="frame" x="314" y="602" width="45" height="45"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="45" id="ILA-Tc-pTn"/>
-                                    <constraint firstAttribute="height" constant="45" id="NRN-8q-PLF"/>
-                                </constraints>
-                                <state key="normal" image="LocationImage.png"/>
+                            <button opaque="NO" alpha="0.90000000000000002" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7SR-Gm-SHg">
+                                <rect key="frame" x="305" y="593" width="64" height="64"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" image="LocationImage"/>
                                 <connections>
                                     <action selector="mapOnUser:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vaZ-e1-Inv"/>
                                 </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                        <constraints>
-                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="7SR-Gm-SHg" secondAttribute="bottom" constant="20" id="2zq-Kh-nBD"/>
-                            <constraint firstItem="zqy-4Y-tLC" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" identifier="$MapTop" id="KVn-SU-oXy"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="zqy-4Y-tLC" secondAttribute="trailing" constant="-20" identifier="%MapTrailing" id="Zws-8G-Ey4"/>
-                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="zqy-4Y-tLC" secondAttribute="bottom" identifier="$MapBottom" id="qJG-AF-pU8"/>
-                            <constraint firstItem="7SR-Gm-SHg" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="ucs-Nl-INL"/>
-                            <constraint firstItem="zqy-4Y-tLC" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-20" identifier="$MapLeading" id="vuY-SE-nNH"/>
-                        </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="UrQ-Na-SZl">
                         <barButtonItem key="rightBarButtonItem" title="Add Your Location" id="7hS-8n-lJ5">
@@ -75,11 +64,11 @@
                         <color key="sectionIndexColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="sectionIndexBackgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.64998891843971629" colorSpace="custom" customColorSpace="sRGB"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="location" id="LOc-AX-EZn">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="location" id="LOc-AX-EZn">
                                 <rect key="frame" x="0.0" y="28" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="LOc-AX-EZn" id="d5A-gV-SXZ">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="342" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableViewCellContentView>
                                 <connections>
@@ -132,10 +121,10 @@
         </scene>
     </scenes>
     <resources>
-        <image name="LocationImage.png" width="64" height="64"/>
+        <image name="LocationImage" width="64" height="64"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="0A5-wo-AuW"/>
+        <segue reference="9Ic-DR-u6m"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" red="0.59999999999999998" green="0.75686274509803919" blue="0.55294117647058827" alpha="1" colorSpace="calibratedRGB"/>
 </document>
