@@ -1,0 +1,32 @@
+===========================
+LocationsApp Notes
+===========================
+
+Features to add:
+
+- Force touch on row
+	* should show preview of location
+	* allow for options:
+		~ edit name
+		~ share location
+
+- When segueing to map from row press:
+	* show location name + description
+		(or address of no name given to location)
+
+	
+- Change how locations are stored
+	* from two arrays to one hashmap or dictionary?
+	* want to store 3 strings: Name, Description, Address (String, String, Stringl)
+	* want to store latitude + longitude doubles as tuple (Double,Double)
+
+	~ Probably ideal to use a Tuple of (String, Coordinate)
+		- where Coordinate is Tuple of (Double, Double) or CLLocationPoint?
+
+- Create new Class for handling + parsing location on map
+
+- Create Setting view
+	* change themes
+	* information about app
+
+

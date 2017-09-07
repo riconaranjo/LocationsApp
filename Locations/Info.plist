@@ -38,7 +38,28 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<true/>
+	
+	
+
+<key>UIApplicationShortcutItems</key>
+    <array>
+        <dict>
+            <key>UIApplicationShortcutItemIconType</key>
+            <string>UIApplicationShortcutIconTypeLocation</string>
+            <key>UIApplicationShortcutItemTitle</key>
+            <string>Favourites</string>
+            <key>UIApplicationShortcutItemType</key>
+            <string>com.mycompany.myapp.tableview</string>
+        </dict>
+        <dict>
+            <key>UIApplicationShortcutItemIconType</key>
+            <string>UIApplicationShortcutIconTypeAdd</string>
+            <key>UIApplicationShortcutItemTitle</key>
+            <string>Add Location</string>
+            <key>UIApplicationShortcutItemType</key>
+            <string>com.mycompany.myapp.mapview</string>
+        </dict>
+    </array>
+	
 </dict>
 </plist>

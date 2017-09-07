@@ -73,14 +73,13 @@ class LocationTableVC: UITableViewController {
         if segue.identifier == nil { return }
         
         let mapVC = segue.destination as! MapVC
+        mapVC.tableVC = self
         
         if segue.identifier == "rowSelected" {
             // send specific coordinates
-            //mapVC.sentLocation = sender as! Location
             if let indexPath = self.tableView.indexPathForSelectedRow {
                 mapVC.sentLocation = locationTable[(indexPath as NSIndexPath).row]
             }
-            
         }
         else if segue.identifier == "addButton" {
             // centre map on user
@@ -124,7 +123,6 @@ class LocationTableVC: UITableViewController {
             
             locationTable.remove(at: (indexPath as NSIndexPath).row)
             deleteAtIndexLocationTable(at: (indexPath as NSIndexPath).row)
-            
         }
         
         // update table and stored data
@@ -148,7 +146,7 @@ class LocationTableVC: UITableViewController {
         self.navigationController?.navigationBar.barStyle = UIBarStyle.black;
     }
     
-    /// takes data saved in NSUserDefaults, and popluates the
+    /// takes data saved in NSUserDefaults, and popluates the table
     func buildLocationTable(tempAddresses:[NSString], tempLat:[NSNumber], tempLong:[NSNumber]) {
         
         let size = [tempAddresses.count, tempLat.count, tempLong.count].min() ?? 0

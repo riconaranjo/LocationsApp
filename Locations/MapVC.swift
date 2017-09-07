@@ -15,12 +15,13 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var addUserLocationButton: UIBarButtonItem!
     @IBOutlet weak var userLocationButton: UIButton!
-        
+    
     let locationManager = CLLocationManager()
     var userLocation = CLLocation()
     var locationTable = [Location]()
     var sentLocation = Location()
     var firstOpened = Bool() // is the view just being opened
+    var tableVC:LocationTableVC?
     
     /// add location where long press
     @IBAction func addLongPressLocation(_ sender: UILongPressGestureRecognizer) {
@@ -33,14 +34,13 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
             
             let pressed = CLLocation(latitude: newCoordinate.latitude, longitude: newCoordinate.longitude)
             
-            //let location = addLocation(pressed)
-            _ = addLocation(pressed)
+            _ = addLocation(pressed, isUser: false)
         }
     }
     
     /// Store the user's location when button tapped
     @IBAction func addUserLocation(_ sender: UIBarButtonItem) {
-        _ = addLocation(userLocation)
+        _ = addLocation(userLocation, isUser: true)
     }
     
     /// centres the map on User's location
@@ -77,7 +77,7 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
     }
     
     /// takes the CLLocation, and finds the placemark from reverse geocoder
-    func getPlacemark(_ cllocation:CLLocation, location: Location) {
+    func getPlacemark(_ cllocation:CLLocation, location:Location, isUser:Bool) {
         CLGeocoder().reverseGeocodeLocation(cllocation, completionHandler: { (placemarks, error ) in
             
             if error != nil || placemarks == nil || placemarks!.count == 0 {
@@ -116,6 +116,11 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
             UserDefaults.standard.set(tempLat, forKey: "tempLat")
             UserDefaults.standard.set(tempLong, forKey: "tempLong")
             
+            if(isUser) {
+                self.tableVC?.tableView.reloadData()
+                self.navigationController?.popViewController(animated: true)
+            }
+            
             // map annotation things
             let annotation = MKPointAnnotation()
             let lat = CLLocationDegrees(location.latitude)
@@ -129,9 +134,9 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
     }
     
     /// Adds and saves location names and coordinates in local data (UserDefaults)
-    func addLocation(_ cllocation:CLLocation) -> Location {
+    func addLocation(_ cllocation:CLLocation, isUser:Bool = false) -> Location {
         let location = Location()
-        getPlacemark(cllocation, location: location)
+        getPlacemark(cllocation, location: location, isUser: isUser)
         return location
     }
     
