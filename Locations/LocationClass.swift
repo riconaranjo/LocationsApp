@@ -9,7 +9,7 @@
 import UIKit
 import MapKit
 
-class Location {
+class LocationClass {
     
     /// Holds the address for the location in format:
     /// \(place.subThoroughfare!) \(place.thoroughfare!) \(place.locality!)

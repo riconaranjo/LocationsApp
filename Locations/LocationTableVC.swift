@@ -8,13 +8,14 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 var row = -1    // this value is used for segueing to map location from row, else -1
 
 // Table View with locations
 class LocationTableVC: UITableViewController {
 
-    var locationTable:[Location] = []
+    var locations:[Location] = []
     
     @IBOutlet weak var addButton: UIBarButtonItem!
     @IBOutlet var locationTableView: UITableView!
@@ -22,13 +23,9 @@ class LocationTableVC: UITableViewController {
     
     // Clear All button
     @IBAction func ClearButtonTapped(_ sender: AnyObject) {
-        
-        locationTable.removeAll()
-        clearLocationTable()
+        clearLocations()
+        locations.removeAll()
         tableView.reloadData()
-        
-        // save list in local storage
-        clearLocationTable()
     }
     
     // when view loads, 'initial set-up'
@@ -48,22 +45,9 @@ class LocationTableVC: UITableViewController {
         return .lightContent
     }
     
-    // Reload table with any new data everytime table will appear
+    // Reload table with any new data
     override func viewWillAppear(_ animated: Bool) {
-        let tempAddress = UserDefaults.standard.object(forKey: "tempAddress") as? [NSString] ?? [NSString]()
-        let tempLat = UserDefaults.standard.object(forKey: "tempLat") as? [NSNumber] ?? [NSNumber]()
-        let tempLong = UserDefaults.standard.object(forKey: "tempLong") as? [NSNumber] ?? [NSNumber]()
-        
-        // if one of the lists is empty, quit
-        if tempAddress.count == 0 || tempLat.count == 0 || tempLong.count == 0 {
-            return
-        } // if one of the lists is different
-        if tempAddress.count != tempLat.count || tempAddress.count != tempLong.count {
-            print("One of the lists was not the same size")
-            return
-        }
-        
-        buildLocationTable(tempAddresses: tempAddress, tempLat: tempLat, tempLong: tempLong)
+        getLocations()
         tableView.reloadData()
     }
 
@@ -72,41 +56,39 @@ class LocationTableVC: UITableViewController {
         
         if segue.identifier == nil { return }
         
+        // view controller is passed so it can update view after (async) location added
         let mapVC = segue.destination as! MapVC
         mapVC.tableVC = self
         
         if segue.identifier == "rowSelected" {
             // send specific coordinates
             if let indexPath = self.tableView.indexPathForSelectedRow {
-                mapVC.sentLocation = locationTable[(indexPath as NSIndexPath).row]
+                mapVC.rowLocation = locations[(indexPath as NSIndexPath).row]
+                mapVC.rowSegue = true
             }
         }
         else if segue.identifier == "addButton" {
-            // centre map on user
-            let emptyLocation = Location()
-            emptyLocation.address = "empty"
-            mapVC.sentLocation = emptyLocation
+            mapVC.rowSegue = false
         }
         // send all locations for map pins
-        mapVC.locationTable = locationTable
+        mapVC.locations = locations
     }
     
     /// Return the number of sections in table sections
     override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
     /// Returns number of rows
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return locationTable.count
+        return locations.count
     }
 
     /// Populates rows with text
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "location", for: indexPath)
-        let location = locationTable[(indexPath as NSIndexPath).row]
-        cell.textLabel?.text = location.address as String
+        let location = locations[(indexPath as NSIndexPath).row]
+        cell.textLabel?.text = location.address
         
         cell.textLabel?.textColor = UIColor.white
         
@@ -121,7 +103,7 @@ class LocationTableVC: UITableViewController {
         // if swipe to left to delete:
         if editingStyle == UITableViewCellEditingStyle.delete {
             
-            locationTable.remove(at: (indexPath as NSIndexPath).row)
+            locations.remove(at: (indexPath as NSIndexPath).row)
             deleteAtIndexLocationTable(at: (indexPath as NSIndexPath).row)
         }
         
@@ -131,6 +113,7 @@ class LocationTableVC: UITableViewController {
     
     /// Action when cell in tableview is selected
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // #todo: remove if not ever used
     }
     
     /// Changes app theme
@@ -147,45 +130,47 @@ class LocationTableVC: UITableViewController {
     }
     
     /// takes data saved in NSUserDefaults, and popluates the table
-    func buildLocationTable(tempAddresses:[NSString], tempLat:[NSNumber], tempLong:[NSNumber]) {
+    func getLocations() {
+        // set up the context for core data
+        let context = getContext()
         
-        let size = [tempAddresses.count, tempLat.count, tempLong.count].min() ?? 0
-        
-        if size == 0 { return } // if empty 
-        
-        locationTable.removeAll()   // clear array since not checking if location exists in list
-        
-        for index in 0..<size {
-            let location = Location(address: tempAddresses[index], latitude: tempLat[index], longitude: tempLong[index])
-            locationTable.append(location)
+        do {
+            locations = try context.fetch(Location.fetchRequest()) as! [Location]
         }
+        catch {
+            print("fetch error in Table View")
+        }
+    }
+    
+    /// Clears the locationTable in local data
+    func deleteAtIndexLocationTable(at:Int) {
+        let context = getContext()
+        let location = locations[at]
+        context.delete(location)
+    }
+    
+    /// Clears the locationTable in local data
+    func clearLocations() {
+        let context = getContext()
+        
+        for each in locations {
+            context.delete(each)
+        }
+
+        saveContext()
     }
 }
 
-/// Clears the locationTable in local data (UserDefaults)
-func clearLocationTable() {
-    let tempAddress = [NSString]()
-    let tempLat = [NSNumber]()
-    let tempLong = [NSNumber]()
-    
-    UserDefaults.standard.set(tempAddress, forKey: "tempAddress")
-    UserDefaults.standard.set(tempLat, forKey: "tempLat")
-    UserDefaults.standard.set(tempLong, forKey: "tempLong")
+func getContext() -> NSManagedObjectContext{
+    // set up the context for core data
+    return (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 }
 
-/// Clears the locationTable in local data (UserDefaults)
-func deleteAtIndexLocationTable(at:Int) {
-    var tempAddress = UserDefaults.standard.object(forKey: "tempAddress") as? [NSString] ?? [NSString]()
-    var tempLat = UserDefaults.standard.object(forKey: "tempLat") as? [NSNumber] ?? [NSNumber]()
-    var tempLong = UserDefaults.standard.object(forKey: "tempLong") as? [NSNumber] ?? [NSNumber]()
-    
-    if tempAddress.count == 0 { return }
-    
-    tempAddress.remove(at: at)
-    tempLat.remove(at: at)
-    tempLong.remove(at: at)
-    
-    UserDefaults.standard.set(tempAddress, forKey: "tempAddress")
-    UserDefaults.standard.set(tempLat, forKey: "tempLat")
-    UserDefaults.standard.set(tempLong, forKey: "tempLong")
+func saveContext() {
+    do{
+        try (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext.save()
+    }
+    catch {
+        print("Could not save Core Data")
+    }
 }

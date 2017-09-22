@@ -8,6 +8,7 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 // Map View
 class MapVC: UIViewController, CLLocationManagerDelegate {
@@ -18,9 +19,10 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
     
     let locationManager = CLLocationManager()
     var userLocation = CLLocation()
-    var locationTable = [Location]()
-    var sentLocation = Location()
+    var locations = [Location]()
     var firstOpened = Bool() // is the view just being opened
+    var rowSegue:Bool = false
+    var rowLocation:Location?
     var tableVC:LocationTableVC?
     
     /// add location where long press
@@ -50,7 +52,8 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
         self.mapView.setRegion(region, animated: true)
     }
     
-    /// automatically updates location of user + where map is centred
+    /// Automatically updates the GPS location of user and where map is centred.
+    /// This function is called by the system
     func locationManager(_ manager:CLLocationManager, didUpdateLocations locations:[CLLocation]) {
         userLocation = locations[0]     // the last location
         
@@ -59,19 +62,22 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
             let mapSpan:MKCoordinateSpan = MKCoordinateSpanMake(0.02,0.02)
             var region = MKCoordinateRegion()
             
-            // if not coming from row press
-            if sentLocation.address == "empty" {
-                region = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
+            // if not coming from row press, centre on user
+            if rowSegue {
+                let location = self.rowLocation
+                let lat = location?.latitude
+                let long = location?.longitude
+                let coordinate = CLLocationCoordinate2DMake(lat!, long!)
+                region = MKCoordinateRegionMake(coordinate,mapSpan)
             }
             // else focus on location in row
             else {
-                let lat = sentLocation.latitude as! CLLocationDegrees
-                let long = sentLocation.longitude as! CLLocationDegrees
-                let coordinate = CLLocationCoordinate2DMake(lat, long)
-                region = MKCoordinateRegionMake(coordinate,mapSpan)
+                region = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
             }
             
             self.mapView.setRegion(region, animated: false)
+            
+            // todo: remove?
             firstOpened = false // stop forcing map centred on user
         }
     }
@@ -85,37 +91,32 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
                 return
             }
             
-            let p = placemarks![0] as CLPlacemark
-            location.setAddress(p)
-            location.setCoordinate(cllocation)
+            let place = placemarks![0] as CLPlacemark
             
-            var tempAddress = UserDefaults.standard.object(forKey: "tempAddress") as? [NSString] ?? [NSString]()
-            var tempLat = UserDefaults.standard.object(forKey: "tempLat") as? [NSNumber] ?? [NSNumber]()
-            var tempLong = UserDefaults.standard.object(forKey: "tempLong") as? [NSNumber] ?? [NSNumber]()
+            location.address = self.parseAddress(place)
+            location.latitude = cllocation.coordinate.latitude
+            location.longitude = cllocation.coordinate.longitude
             
             // if location is close enough to existing location, do not add it
-            for(index, lat) in tempLat.enumerated() {
-                let x = lat as! Double
-                let y = location.latitude as! Double
+            for each in self.locations {
+                let x = location.latitude
+                let y = each.latitude
                 let latResult = fabs(x - y) < 0.0002
                 
-                let u = tempLong[index] as! Double
-                let v = location.longitude as! Double
+                let u = location.longitude
+                let v = each.longitude
                 let longResult = fabs(u - v) < 0.0002
                 
                 if latResult && longResult {
+                    let context = getContext()
+                    context.delete(location)
                     return
                 }
             }
             
-            tempAddress.append(location.address)
-            tempLat.append(location.latitude)
-            tempLong.append(location.longitude)
+            saveContext()
             
-            UserDefaults.standard.set(tempAddress, forKey: "tempAddress")
-            UserDefaults.standard.set(tempLat, forKey: "tempLat")
-            UserDefaults.standard.set(tempLong, forKey: "tempLong")
-            
+            // if adding user location, segue back to table view
             if(isUser) {
                 self.tableVC?.tableView.reloadData()
                 self.navigationController?.popViewController(animated: true)
@@ -126,18 +127,71 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
             let lat = CLLocationDegrees(location.latitude)
             let long = CLLocationDegrees(location.longitude)
             annotation.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
-            annotation.title = location.address as String
+            annotation.title = location.address
             // todo: add ability for user to add/modify description later
             //annotation.subtitle = "Description"
             self.mapView.addAnnotation(annotation)
         })
     }
     
+    /// Parses location from CLPlacemark place and stores it in address
+    func parseAddress(_ place: CLPlacemark) -> String {
+        var address = ""
+        var locality = place.locality ?? ""
+        var thoroughfare = place.thoroughfare ?? ""
+        var subThoroughfare = place.subThoroughfare ?? ""
+        
+        // if all paramters are empty, only add country
+        if subThoroughfare == "" && thoroughfare == "" && locality == "" {
+            address = place.country ?? "No country or address found"
+            return address
+        }
+        
+        // add space after section if not empty
+        if locality         != "" { locality += " " }
+        if thoroughfare     != "" { thoroughfare += " " }
+        if subThoroughfare  != "" { subThoroughfare += " " }
+        
+        address = "\(subThoroughfare)\(thoroughfare)\(locality)"
+        return address
+    }
+
+    
     /// Adds and saves location names and coordinates in local data (UserDefaults)
     func addLocation(_ cllocation:CLLocation, isUser:Bool = false) -> Location {
-        let location = Location()
+        let location = Location(context: getContext())
         getPlacemark(cllocation, location: location, isUser: isUser)
         return location
+    }
+    
+    /// Fetches locations in CoreData and stores them in locations array
+    func getLocations() {
+        // set up the context for core data
+        let context = getContext()
+        
+        do {
+            locations = try context.fetch(Location.fetchRequest()) as! [Location]
+        }
+        catch {
+            print("fetch error in Map View")
+        }
+    }
+    
+    /// Add Map Pins in locations array
+    func addMapPins() {
+        for location in locations {
+            let annotation = MKPointAnnotation()
+            let address = location.address
+            let lat = location.latitude
+            let long = location.longitude
+            
+            annotation.coordinate = CLLocationCoordinate2DMake(lat, long)
+            annotation.title = address
+            
+            // todo: add description capabilties
+            //annotation.subtitle = "Description"
+            self.mapView.addAnnotation(annotation)
+        }
     }
     
     override func viewDidLoad() {
@@ -149,25 +203,8 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
         
-        // centre image on user or saved location + add map pins
-        if locationTable.count != 0 {
-            
-            // like a foreach (with index, but not used)
-            for(_,loc) in locationTable.enumerated() {
-                
-                let annotation = MKPointAnnotation()
-                let address = loc.address
-                let lat = loc.latitude as! CLLocationDegrees
-                let long = loc.longitude as! CLLocationDegrees
-                
-                annotation.coordinate = CLLocationCoordinate2DMake(lat, long)
-                annotation.title = address as String
-                
-                // todo: add description capabilties
-                //annotation.subtitle = "Description"
-                self.mapView.addAnnotation(annotation)
-            }
-        }
+        getLocations()
+        addMapPins()
         
         // show user as blue dot
         mapView.showsUserLocation = true
@@ -177,6 +214,7 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
         mapView.addGestureRecognizer(uilpgr)
         uilpgr.minimumPressDuration = 0.35
         
-        firstOpened = true // if the view just being opened -> centre the map on user location
+        // if the view just being opened -> centre the map on user location
+        firstOpened = true
     }
 }
