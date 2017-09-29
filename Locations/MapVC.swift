@@ -21,7 +21,7 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
     var userLocation = CLLocation()
     var locations = [Location]()
     var firstOpened = Bool() // is the view just being opened
-    var rowSegue:Bool = false
+    var rowSegue = false
     var rowLocation:Location?
     var tableVC:LocationTableVC?
     

@@ -103,7 +103,6 @@ class LocationTableVC: UITableViewController {
         // if swipe to left to delete:
         if editingStyle == UITableViewCellEditingStyle.delete {
             
-            locations.remove(at: (indexPath as NSIndexPath).row)
             deleteAtIndexLocationTable(at: (indexPath as NSIndexPath).row)
         }
         
@@ -121,7 +120,7 @@ class LocationTableVC: UITableViewController {
         // todo: finish adding colour scheme
         navigationController?.navigationBar.isTranslucent = true
         navigationController?.navigationBar.barTintColor = Style.COLOUR_1
-        navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: Style.COLOUR_5]
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: Style.COLOUR_5]
         self.tableView.backgroundColor = Style.COLOUR_2
         self.tableView.isOpaque = false
         
@@ -146,7 +145,9 @@ class LocationTableVC: UITableViewController {
     func deleteAtIndexLocationTable(at:Int) {
         let context = getContext()
         let location = locations[at]
+        locations.remove(at: at)
         context.delete(location)
+        saveContext()
     }
     
     /// Clears the locationTable in local data
