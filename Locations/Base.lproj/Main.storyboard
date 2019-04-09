@@ -21,8 +21,11 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" alpha="0.90000000000000002" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7SR-Gm-SHg">
-                                <rect key="frame" x="315" y="718" width="50" height="50"/>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="zqy-4Y-tLC">
+                                <rect key="frame" x="0.0" y="88" width="375" height="758"/>
+                            </mapView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7SR-Gm-SHg">
+                                <rect key="frame" x="309" y="103" width="50" height="50"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="50" id="2ih-jf-lFv"/>
                                     <constraint firstAttribute="height" constant="50" id="H3c-uh-Ryz"/>
@@ -32,20 +35,17 @@
                                     <action selector="mapOnUser:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vaZ-e1-Inv"/>
                                 </connections>
                             </button>
-                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="zqy-4Y-tLC">
-                                <rect key="frame" x="0.0" y="88" width="375" height="758"/>
-                            </mapView>
                         </subviews>
                         <color key="backgroundColor" red="0.22780057787895203" green="0.22654682397842407" blue="0.27451592683792114" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="zqy-4Y-tLC" secondAttribute="trailing" id="2YT-L1-lhk"/>
                             <constraint firstAttribute="trailing" secondItem="zqy-4Y-tLC" secondAttribute="trailing" id="9gk-Oh-qWn"/>
+                            <constraint firstItem="xcD-pc-YYa" firstAttribute="top" secondItem="7SR-Gm-SHg" secondAttribute="bottom" constant="625" id="Bj8-VV-O0P"/>
                             <constraint firstItem="zqy-4Y-tLC" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="C4E-bM-tDa"/>
                             <constraint firstItem="zqy-4Y-tLC" firstAttribute="top" secondItem="C1K-qf-WzX" secondAttribute="bottom" id="Cs9-UU-Abw"/>
-                            <constraint firstItem="xcD-pc-YYa" firstAttribute="top" secondItem="7SR-Gm-SHg" secondAttribute="bottom" constant="10" id="Rdb-Fw-NVD"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="7SR-Gm-SHg" secondAttribute="trailing" id="N2p-8b-Nkx"/>
                             <constraint firstItem="zqy-4Y-tLC" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="k0y-rh-0cT"/>
                             <constraint firstAttribute="bottom" secondItem="zqy-4Y-tLC" secondAttribute="bottom" constant="-34" id="kA0-hH-Noy"/>
-                            <constraint firstAttribute="trailing" secondItem="7SR-Gm-SHg" secondAttribute="trailing" constant="10" id="uf4-05-fL3"/>
                             <constraint firstItem="zqy-4Y-tLC" firstAttribute="top" secondItem="C1K-qf-WzX" secondAttribute="bottom" id="veA-PU-FBC"/>
                         </constraints>
                     </view>
@@ -134,7 +134,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="LocationImage" width="64" height="64"/>
+        <image name="LocationImage" width="200" height="200"/>
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="9Ic-DR-u6m"/>
