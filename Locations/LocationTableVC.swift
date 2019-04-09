@@ -98,10 +98,10 @@ class LocationTableVC: UITableViewController {
     }
     
     /// Enables swipe left to delete row
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         
         // if swipe to left to delete:
-        if editingStyle == UITableViewCellEditingStyle.delete {
+        if editingStyle == UITableViewCell.EditingStyle.delete {
             
             deleteAtIndexLocationTable(at: (indexPath as NSIndexPath).row)
         }
@@ -120,7 +120,7 @@ class LocationTableVC: UITableViewController {
         // todo: finish adding colour scheme
         navigationController?.navigationBar.isTranslucent = true
         navigationController?.navigationBar.barTintColor = Style.COLOUR_1
-        navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: Style.COLOUR_5]
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: Style.COLOUR_5]
         self.tableView.backgroundColor = Style.COLOUR_2
         self.tableView.isOpaque = false
         
@@ -128,7 +128,7 @@ class LocationTableVC: UITableViewController {
         self.navigationController?.navigationBar.barStyle = UIBarStyle.black;
     }
     
-    /// takes data saved in NSUserDefaults, and popluates the table
+    /// takes data saved in CoreData, and popluates the table
     func getLocations() {
         // set up the context for core data
         let context = getContext()

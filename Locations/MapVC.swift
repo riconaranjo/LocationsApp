@@ -29,7 +29,7 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
     @IBAction func addLongPressLocation(_ sender: UILongPressGestureRecognizer) {
         
         // gets location of long press relative to map
-        if (sender.state == UIGestureRecognizerState.began) {
+        if (sender.state == UIGestureRecognizer.State.began) {
             
             let touchPoint = sender.location(in: mapView)
             let newCoordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
@@ -48,7 +48,7 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
     /// centres the map on User's location
     @IBAction func mapOnUser(_ sender: AnyObject) {
         let mapSpan = mapView.region.span
-        let region:MKCoordinateRegion = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
+        let region:MKCoordinateRegion = MKCoordinateRegion.init(center: userLocation.coordinate,span: mapSpan)
         self.mapView.setRegion(region, animated: true)
     }
     
@@ -59,7 +59,7 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
         
         // field of view
         if firstOpened {
-            let mapSpan:MKCoordinateSpan = MKCoordinateSpanMake(0.02,0.02)
+            let mapSpan:MKCoordinateSpan = MKCoordinateSpan.init(latitudeDelta: 0.02,longitudeDelta: 0.02)
             var region = MKCoordinateRegion()
             
             // if not coming from row press, centre on user
@@ -68,11 +68,11 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
                 let lat = location?.latitude
                 let long = location?.longitude
                 let coordinate = CLLocationCoordinate2DMake(lat!, long!)
-                region = MKCoordinateRegionMake(coordinate,mapSpan)
+                region = MKCoordinateRegion.init(center: coordinate,span: mapSpan)
             }
             // else focus on location in row
             else {
-                region = MKCoordinateRegionMake(userLocation.coordinate,mapSpan)
+                region = MKCoordinateRegion.init(center: userLocation.coordinate,span: mapSpan)
             }
             
             self.mapView.setRegion(region, animated: false)
@@ -157,7 +157,7 @@ class MapVC: UIViewController, CLLocationManagerDelegate {
     }
 
     
-    /// Adds and saves location names and coordinates in local data (UserDefaults)
+    /// Adds and saves location names and coordinates in local data (CoreData)
     func addLocation(_ cllocation:CLLocation, isUser:Bool = false) -> Location {
         let location = Location(context: getContext())
         getPlacemark(cllocation, location: location, isUser: isUser)
